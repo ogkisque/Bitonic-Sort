@@ -63,6 +63,10 @@ namespace details {
             PARSE_ERR("creating context", err)
         }
 
+        ~Context() {
+            clReleaseContext(context_);
+        }
+
         cl_context GetContext() const {
             return context_;
         }
@@ -100,9 +104,17 @@ namespace details {
             PARSE_ERR("compiling program", err);
         }
 
+        ~Program() {
+            clReleaseProgram(program_);
+        }
+
         cl_program GetProgram() const
         {
             return program_;
+        }
+
+        Context GetContext() const {
+            return context_;
         }
 
     private:
@@ -117,26 +129,16 @@ namespace details {
         cl_program program_;
     }; // class Program
 
-    class Kernel {
-    public:
-        Kernel(Program program, std::string &func_name) : program_(program) {
-            cl_int err = 0;
-            kernel_ = clCreateKernel(program_.GetProgram(), func_name.data(), &err);
-            PARSE_ERR("creating kernel", err)
-        }
-
-    private:
-        Program program_;
-        cl_kernel kernel_;
-
-    }; // class Kernel
-
     class CommandQueue {
     public:
         CommandQueue(Context context) : context_(context) {
             cl_int err = 0;
             queue_ = clCreateCommandQueue(context_.GetContext(), context_.GetDevice().GetId(), 0, &err);
             PARSE_ERR("creating queue", err)
+        }
+
+        ~CommandQueue() {
+            clReleaseCommandQueue(queue_);
         }
 
         cl_command_queue GetQueue() const {
@@ -154,29 +156,109 @@ namespace details {
 
     class Buffer {
     public:
-        Buffer(CommandQueue queue, cl_mem_flags flag, size_t size) : queue_(queue) {
+        Buffer(CommandQueue queue, cl_mem_flags flag, size_t size) : queue_(queue), size_(size) {
             cl_int err = 0;
             buf_ = clCreateBuffer(queue_.GetContext().GetContext(), flag, size, NULL, &err);
             PARSE_ERR("creating buffer", err)
         }
 
+        ~Buffer() {
+            clReleaseMemObject(buf_);
+        }
+
         template <typename IterT>
-        Buffer(CommandQueue queue, IterT start_it, IterT end_it, cl_mem_flags flag = CL_MEM_READ_ONLY) :
+        Buffer(CommandQueue queue, IterT start_it, IterT end_it, cl_mem_flags flag) :
                queue_(queue) {
+            using T = std::iter_value_t<IterT>;
             cl_int err = 0;
-            size_t size = std::distance(start_it, end_it) * sizeof(*start_it);
-            buf_ = clCreateBuffer(queue_.GetContext().GetContext(), flag, size, NULL, &err);
+            size_ = std::distance(start_it, end_it) * sizeof(T);
+            buf_ = clCreateBuffer(queue_.GetContext().GetContext(), flag, size_, NULL, &err);
             PARSE_ERR("creating buffer", err)
 
-            void *data = malloc(size);
+            T *data = (T*) malloc(size_);
             std::copy(start_it, end_it, data);
-            err = clEnqueueWriteBuffer(queue_.GetQueue(), buf_, CL_TRUE, 0, size, data, 0, NULL, NULL);
+            err = clEnqueueWriteBuffer(queue_.GetQueue(), buf_, CL_TRUE, 0, size_, data, 0, NULL, NULL);
+            free(data);
             PARSE_ERR("copy to buffer", err)
+        }
+
+        cl_mem GetBuf() const {
+            return buf_;
+        }
+
+        size_t GetSize() const {
+            return size_;
+        }
+
+        template <typename IterT>
+        void Copy(IterT it)
+        {
+            using T = std::iter_value_t<IterT>;
+            cl_int err = 0;
+            T *res = (T*) malloc(size_);
+            err |= clEnqueueReadBuffer(queue_.GetQueue(), buf_, CL_TRUE, 0, size_, res, 0, NULL, NULL);
+            PARSE_ERR("copy from cl buffer", err); 
+
+            std::copy(res, res + size_, it);
+            free(res);
         }
 
     private:
         CommandQueue queue_;
         cl_mem buf_;
+        size_t size_;
     }; // class Buffer
+
+    class Kernel {
+    public:
+        Kernel(Program program, CommandQueue queue, std::string &func_name) :
+               program_(program), queue_(queue) {
+            cl_int err = 0;
+            kernel_ = clCreateKernel(program_.GetProgram(), func_name.data(), &err);
+            PARSE_ERR("creating kernel", err)
+        }
+
+        ~Kernel() {
+            clReleaseKernel(kernel_);
+        }
+
+        template <typename T>
+        void SetArg(cl_uint arg_num, T &arg_value, size_t arg_size = sizeof(arg_value)) {
+            cl_int err = clSetKernelArg(kernel_, arg_num, arg_size, &arg_value);
+            PARSE_ERR("setting arg in kernel", err)
+        }
+
+        void SetArg(cl_uint arg_num, Buffer &buf) {
+            cl_mem mem = buf.GetBuf();
+            cl_int err = clSetKernelArg(kernel_, arg_num, sizeof(cl_mem), &mem);
+            PARSE_ERR("setting arg in kernel", err)
+        }
+
+        template <typename IterT>
+        void SetArgs(IterT start_it, IterT end_it, cl_uint first_arg_num)
+        {
+            cl_int err = 0;
+            size_t size = sizeof(IterT*);
+            cl_uint num = first_arg_num;
+            for (IterT it = start_it; it != end_it; it++, num++) {
+                cl_int err = clSetKernelArg(kernel_, num, size, it);
+                PARSE_ERR("setting arg in kernel", err)
+            }
+        }
+
+        void operator() (size_t data_size) {
+            cl_int err = 0;
+            err |= clEnqueueNDRangeKernel(queue_.GetQueue(), kernel_, 1, NULL, &data_size, NULL, 0, NULL, NULL);
+            PARSE_ERR("invoke kernel", err)
+            err |= clFinish(queue_.GetQueue());
+            PARSE_ERR("finish kernel", err)
+        }
+
+    private:
+        Program program_;
+        CommandQueue queue_;
+        cl_kernel kernel_;
+
+    }; // class Kernel
 
 } // namespace cl
