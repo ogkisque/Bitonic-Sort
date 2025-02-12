@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <fstream>
+#include <iostream>
 
 namespace cl {
 
@@ -63,6 +64,19 @@ namespace details {
             PARSE_ERR("creating context", err)
         }
 
+        Context& operator= (const Context &other) {
+            if (this != &other) {
+                context_ = other.context_;
+                device_ = other.device_;
+                clRetainContext(other.context_);
+            }
+            return *this;
+        }
+
+        Context(const Context &other) : device_(other.device_), context_(other.context_) {
+            clRetainContext(other.context_);
+        }
+
         ~Context() {
             clReleaseContext(context_);
         }
@@ -97,11 +111,24 @@ namespace details {
 
         Program(Context context, const char **program_text) : context_(context) {
             cl_int err = 0;
-
             program_ = clCreateProgramWithSource(context_.GetContext(), 1, program_text, NULL, &err);
-            err |= clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
-
             PARSE_ERR("compiling program", err);
+
+            err |= clBuildProgram(program_, 0, NULL, NULL, NULL, NULL);
+            PARSE_ERR("compiling program", err);
+        }
+
+        Program& operator= (const Program &other) {
+            if (this != &other) {
+                context_ = other.context_;
+                program_ = other.program_;
+                clRetainProgram(other.program_);
+            }
+            return *this;
+        }
+
+        Program(const Program &other) : context_(other.context_), program_(other.program_) {
+            clRetainProgram(other.program_);
         }
 
         ~Program() {
@@ -137,6 +164,19 @@ namespace details {
             PARSE_ERR("creating queue", err)
         }
 
+        CommandQueue& operator= (const CommandQueue &other) {
+            if (this != &other) {
+                context_ = other.context_;
+                queue_ = other.queue_;
+                clRetainCommandQueue(other.queue_);
+            }
+            return *this;
+        }
+
+        CommandQueue(const CommandQueue &other) : context_(other.context_), queue_(other.queue_) {
+            clRetainCommandQueue(other.queue_);
+        }
+
         ~CommandQueue() {
             clReleaseCommandQueue(queue_);
         }
@@ -162,14 +202,26 @@ namespace details {
             PARSE_ERR("creating buffer", err)
         }
 
+        Buffer& operator= (const Buffer &other) {
+            if (this != &other) {
+                queue_ = other.queue_;
+                clRetainMemObject(other.buf_);
+            }
+            return *this;
+        }
+
+        Buffer(const Buffer &other) : queue_(other.queue_) {
+            clRetainMemObject(other.buf_);
+        }
+
         ~Buffer() {
             clReleaseMemObject(buf_);
         }
 
         template <typename IterT>
-        Buffer(CommandQueue queue, IterT start_it, IterT end_it, cl_mem_flags flag) :
+        Buffer(CommandQueue &queue, IterT start_it, IterT end_it, cl_mem_flags flag) :
                queue_(queue) {
-            using T = std::iter_value_t<IterT>;
+            using T = typename std::iterator_traits<IterT>::value_type;
             cl_int err = 0;
             size_ = std::distance(start_it, end_it) * sizeof(T);
             buf_ = clCreateBuffer(queue_.GetContext().GetContext(), flag, size_, NULL, &err);
@@ -191,15 +243,19 @@ namespace details {
         }
 
         template <typename IterT>
-        void Copy(IterT it)
+        void Copy(IterT start_it)
         {
-            using T = std::iter_value_t<IterT>;
+            using T = typename std::iterator_traits<IterT>::value_type;
             cl_int err = 0;
             T *res = (T*) malloc(size_);
             err |= clEnqueueReadBuffer(queue_.GetQueue(), buf_, CL_TRUE, 0, size_, res, 0, NULL, NULL);
             PARSE_ERR("copy from cl buffer", err); 
 
-            std::copy(res, res + size_, it);
+            size_t num_elems = size_ / sizeof(T);
+            IterT it = start_it;
+            for (size_t i = 0; i < num_elems; i++, it++)
+                *it = res[i];
+
             free(res);
         }
 
@@ -211,11 +267,24 @@ namespace details {
 
     class Kernel {
     public:
-        Kernel(Program program, CommandQueue queue, std::string &func_name) :
+        Kernel(Program &program, CommandQueue &queue, std::string &func_name) :
                program_(program), queue_(queue) {
             cl_int err = 0;
             kernel_ = clCreateKernel(program_.GetProgram(), func_name.data(), &err);
             PARSE_ERR("creating kernel", err)
+        }
+
+        Kernel& operator= (const Kernel &other) {
+            if (this != &other) {
+                queue_ = other.queue_;
+                program_ = other.program_;
+                clRetainKernel(other.kernel_);
+            }
+            return *this;
+        }
+
+        Kernel(const Kernel &other) : queue_(other.queue_), program_(other.program_) {
+            clRetainKernel(other.kernel_);
         }
 
         ~Kernel() {
@@ -223,8 +292,8 @@ namespace details {
         }
 
         template <typename T>
-        void SetArg(cl_uint arg_num, T &arg_value, size_t arg_size = sizeof(arg_value)) {
-            cl_int err = clSetKernelArg(kernel_, arg_num, arg_size, &arg_value);
+        void SetArg(cl_uint arg_num, T &arg_value) {
+            cl_int err = clSetKernelArg(kernel_, arg_num, sizeof(arg_value), &arg_value);
             PARSE_ERR("setting arg in kernel", err)
         }
 

@@ -36,8 +36,7 @@ int main() {
     kernel.SetArg(2, buf_res);
 
     kernel(buf1.GetSize());
-    std::vector<int> res;
-    res.reserve(16);
+    std::vector<int> res = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     buf_res.Copy(res.begin());
 
     for (auto &it : res)
@@ -45,3 +44,4 @@ int main() {
 
     return 0;
 }
+
