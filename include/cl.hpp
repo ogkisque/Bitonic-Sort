@@ -265,6 +265,11 @@ namespace cl {
             return *this;
         }
 
+        void PutBarrier() {
+            cl_int err = clEnqueueBarrier(obj_);
+            PARSE_ERR("putting barrier", err)
+        }
+
         Context GetContext() const {
             return context_;
         }
@@ -329,7 +334,7 @@ namespace cl {
         }
 
         template <typename IterT>
-        void Copy(IterT start_it) {
+        void Read(IterT start_it) {
             using T = typename std::iterator_traits<IterT>::value_type;
             cl_int err = 0;
             T *res = (T*) malloc(size_);
@@ -342,6 +347,18 @@ namespace cl {
                 *it = res[i];
 
             free(res);
+        }
+
+        template <typename IterT>
+        void Write(IterT start_it, IterT end_it) {
+            using T = typename std::iterator_traits<IterT>::value_type;
+            cl_int err = 0;
+            T *data = (T*) malloc(size_);
+            std::copy(start_it, end_it, data);
+            err = clEnqueueWriteBuffer(queue_.Get(), obj_, CL_TRUE, 0, size_, data, 0, NULL, NULL);
+
+            free(data);
+            PARSE_ERR("copy to buffer", err)
         }
 
     private:
