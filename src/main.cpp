@@ -7,14 +7,16 @@
 #include <iostream>
 #include <vector>
 
-int main() {
+namespace {
     const char *ProgramSource =
     "__kernel void add(__global int *inputA, __global int *inputB, __global int *output)\n"\
     "{\n"\
     "   size_t id = get_global_id(0);\n"\
     "   output[id] = inputA[id] + inputB[id];\n"\
     "}\n";
+}
 
+int main() {
     cl::Platform platform;
     cl::Device device(platform);
     cl::Context context(device);
@@ -35,7 +37,8 @@ int main() {
     kernel.SetArg(1, buf2);
     kernel.SetArg(2, buf_res);
 
-    kernel(buf1.GetSize());
+    kernel.Run(buf1.GetSize());
+
     std::vector<int> res = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     buf_res.Copy(res.begin());
 
