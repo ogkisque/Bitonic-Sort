@@ -18,6 +18,7 @@ namespace cl {
 
     namespace details {
         template <typename T, cl_int Name> struct param_traits {};
+        
         template<> struct param_traits<cl_platform_info, CL_PLATFORM_NAME> {
             enum { value = CL_PLATFORM_NAME };
             using type = std::string;
@@ -488,10 +489,14 @@ namespace cl {
             template <cl_platform_info param_name>
             static typename details::param_traits<cl_platform_info, param_name>::type
             GetInfo(cl_platform_id platform) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetPlatformInfo(platform, param_name, 0, NULL, &info_size);
+                err = clGetPlatformInfo(platform, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting platform info", err)
+
                 std::string value{info_size, '\0'};
-                clGetPlatformInfo(platform, param_name, info_size, value.c_str(), NULL);
+                err = clGetPlatformInfo(platform, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
                 return details::param_traits<cl_platform_info, param_name>::CastToType(value);
             }
@@ -501,10 +506,14 @@ namespace cl {
             template <cl_device_info param_name>
             static typename details::param_traits<cl_device_info, param_name>::type
             GetInfo(cl_device_id device) {
+                cl_int err = 0;
                 size_t info_size = 0;
                 clGetDeviceInfo(device, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting device info", err)
+
                 std::string value{info_size, '\0'};
-                clGetDeviceInfo(device, param_name, info_size, value.c_str(), NULL);
+                err = clGetDeviceInfo(device, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting device info", err)
                 
                 return details::param_traits<cl_device_info, param_name>::CastToType(value);
             }
@@ -514,10 +523,14 @@ namespace cl {
             template <cl_context_info param_name>
             static typename details::param_traits<cl_context_info, param_name>::type
             GetInfo(cl_context context) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetContextInfo(context, param_name, 0, NULL, &info_size);
+                err = clGetContextInfo(context, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting context info", err)
+
                 std::string value{info_size, '\0'};
-                clGetContextInfo(context, param_name, info_size, value.c_str(), NULL);
+                err = clGetContextInfo(context, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting context info", err)
                 
                 return details::param_traits<cl_context_info, param_name>::CastToType(value);
             }
@@ -527,10 +540,14 @@ namespace cl {
             template <cl_program_info param_name>
             static typename details::param_traits<cl_program_info, param_name>::type
             GetInfo(cl_program program) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetProgramInfo(program, param_name, 0, NULL, &info_size);
+                err = clGetProgramInfo(program, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting program info", err)
+
                 std::string value{info_size, '\0'};
-                clGetProgramInfo(program, param_name, info_size, value.c_str(), NULL);
+                err = clGetProgramInfo(program, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting program info", err)
                 
                 return details::param_traits<cl_program_info, param_name>::CastToType(value);
             }
@@ -540,10 +557,14 @@ namespace cl {
             template <cl_command_queue_info param_name>
             static typename details::param_traits<cl_command_queue_info, param_name>::type
             GetInfo(cl_command_queue command_queue) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetCommandQueueInfo(command_queue, param_name, 0, NULL, &info_size);
+                err = clGetCommandQueueInfo(command_queue, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting cmd queue info", err)
+
                 std::string value{info_size, '\0'};
-                clGetCommandQueueInfo(command_queue, param_name, info_size, value.c_str(), NULL);
+                err = clGetCommandQueueInfo(command_queue, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting cmd queue info", err)
                 
                 return details::param_traits<cl_command_queue_info, param_name>::CastToType(value);
             }
@@ -553,10 +574,14 @@ namespace cl {
             template <cl_mem_info param_name>
             static typename details::param_traits<cl_mem_info, param_name>::type
             GetInfo(cl_mem memory) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetMemObjectInfo(memory, param_name, 0, NULL, &info_size);
+                err = clGetMemObjectInfo(memory, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting mem object info", err)
+
                 std::string value{info_size, '\0'};
-                clGetMemObjectInfo(memory, param_name, info_size, value.c_str(), NULL);
+                err = clGetMemObjectInfo(memory, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting mem object info", err)
                 
                 return details::param_traits<cl_mem_info, param_name>::CastToType(value);
             }
@@ -566,10 +591,14 @@ namespace cl {
             template <cl_kernel_info param_name>
             static typename details::param_traits<cl_kernel_info, param_name>::type
             GetInfo(cl_kernel kernel) {
+                cl_int err = 0;
                 size_t info_size = 0;
-                clGetKernelInfo(kernel, param_name, 0, NULL, &info_size);
+                err = clGetKernelInfo(kernel, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting kernel info", err)
+
                 std::string value{info_size, '\0'};
-                clGetKernelInfo(kernel, param_name, info_size, value.c_str(), NULL);
+                err = clGetKernelInfo(kernel, param_name, info_size, value.c_str(), NULL);
+                PARSE_ERR("getting kernel info", err)
                 
                 return details::param_traits<cl_kernel_info, param_name>::CastToType(value);
             }

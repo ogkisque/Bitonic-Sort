@@ -17,7 +17,6 @@ namespace cl {
         throw std::runtime_error(msg); \
     } \
 
-
     namespace details {
         
         /*  Wrapper  */
