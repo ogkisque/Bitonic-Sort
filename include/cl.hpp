@@ -270,6 +270,11 @@ namespace cl {
             PARSE_ERR("putting barrier", err)
         }
 
+        void Finish() {
+            cl_int err = clFinish(obj_);
+            PARSE_ERR("finish tasks", err)
+        }
+
         Context GetContext() const {
             return context_;
         }
@@ -373,6 +378,7 @@ namespace cl {
         Kernel(const Program &program, const CommandQueue &queue, std::string &func_name) :
                 program_(program), queue_(queue) {
             cl_int err = 0;
+
             obj_ = clCreateKernel(program_.Get(), func_name.data(), &err);
             PARSE_ERR("creating kernel", err)
         }
@@ -426,9 +432,9 @@ namespace cl {
             }
         }
 
-        void Run(size_t data_size) {
+        void Run(size_t global_work_size) {
             cl_int err = 0;
-            err |= clEnqueueNDRangeKernel(queue_.Get(), obj_, 1, NULL, &data_size, NULL, 0, NULL, NULL);
+            err |= clEnqueueNDRangeKernel(queue_.Get(), obj_, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
             PARSE_ERR("invoke kernel", err)
             err |= clFinish(queue_.Get());
             PARSE_ERR("finish kernel", err)
