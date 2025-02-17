@@ -9,39 +9,39 @@
 
 namespace cl {
 
-#define PARSE_ERR(msg_text, err)  \
+    #define PARSE_ERR(msg_text, err)  \
     if (err != CL_SUCCESS) {  \
         std::string msg = "Error with " + std::string(msg_text) + ". Code: " + std::to_string(err); \
         throw std::runtime_error(msg); \
     } \
 
-
     namespace details {
         template <typename T, cl_int Name> struct param_traits {};
-        
+
+        /*  Platform  */
         template<> struct param_traits<cl_platform_info, CL_PLATFORM_NAME> {
             enum { value = CL_PLATFORM_NAME };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
-
-        /*  Platform  */
+        
         template<> struct param_traits<cl_platform_info, CL_PLATFORM_PROFILE> {
             enum { value = CL_PLATFORM_PROFILE };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
+
         template<> struct param_traits<cl_platform_info, CL_PLATFORM_VERSION> {
             enum { value = CL_PLATFORM_VERSION };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
@@ -50,7 +50,7 @@ namespace cl {
             enum { value = CL_PLATFORM_VENDOR };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
@@ -60,8 +60,8 @@ namespace cl {
             enum { value = CL_DEVICE_TYPE };
             using type = cl_device_type;
 
-            type CastToType(const std::string &str) {
-                return std::stoul(str);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
         
@@ -69,8 +69,8 @@ namespace cl {
             enum { value = CL_DEVICE_VENDOR_ID };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<const unsigned int*>(str.data());
             }
         };
 
@@ -78,8 +78,8 @@ namespace cl {
             enum { value = CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
@@ -87,11 +87,11 @@ namespace cl {
             enum { value = CL_DEVICE_MAX_WORK_ITEM_SIZES };
             using type = std::vector<size_t>;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 size_t size = str.size();
                 type v; v.reserve(size / sizeof(size_t));
                 for (size_t i = 0; i < size; i += sizeof(size_t)) {
-                    size_t tmp = *reinterpret_cast<size_t*>(str.data());
+                    size_t tmp = *reinterpret_cast<size_t*>(&str[i]);
                     v.push_back(tmp);
                 }
                 return v;
@@ -102,8 +102,8 @@ namespace cl {
             enum { value = CL_DEVICE_MAX_WORK_GROUP_SIZE };
             using type = size_t;
 
-            type CastToType(std::string &str) {
-                return std::stoull(str);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
         
@@ -112,8 +112,8 @@ namespace cl {
             enum { value = CL_CONTEXT_REFERENCE_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
@@ -121,20 +121,20 @@ namespace cl {
             enum { value = CL_CONTEXT_NUM_DEVICES };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
         template<> struct param_traits<cl_context_info, CL_CONTEXT_DEVICES> {
-            enum { value = CL_CONTEXT_NUM_DEVICES };
+            enum { value = CL_CONTEXT_DEVICES };
             using type = std::vector<cl_device_id>;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 size_t size = str.size();
                 type v; v.reserve(size / sizeof(cl_device_id));
                 for (size_t i = 0; i < size; i += sizeof(cl_device_id)) {
-                    cl_device_id tmp = *reinterpret_cast<cl_device_id*>(str.data());
+                    cl_device_id tmp = *reinterpret_cast<cl_device_id*>(&str[i]);
                     v.push_back(tmp);
                 }
                 return v;
@@ -145,11 +145,11 @@ namespace cl {
             enum { value = CL_CONTEXT_PROPERTIES };
             using type = std::vector<cl_context_properties>;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 size_t size = str.size();
                 type v; v.reserve(size / sizeof(cl_context_properties));
                 for (size_t i = 0; i < size; i += sizeof(cl_context_properties)) {
-                    cl_context_properties tmp = *reinterpret_cast<cl_context_properties*>(str.data());
+                    cl_context_properties tmp = *reinterpret_cast<cl_context_properties*>(&str[i]);
                     v.push_back(tmp);
                 }
                 return v;
@@ -161,8 +161,8 @@ namespace cl {
             enum { value = CL_PROGRAM_REFERENCE_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
@@ -170,8 +170,8 @@ namespace cl {
             enum { value = CL_PROGRAM_CONTEXT };
             using type = cl_context;
 
-            type CastToType(std::string &str) {
-                return *reinterpret_cast<cl_context*>(&str[0]);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<cl_context*>(str.data());
             }
         };
 
@@ -179,8 +179,8 @@ namespace cl {
             enum { value = CL_PROGRAM_NUM_DEVICES };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
@@ -188,11 +188,11 @@ namespace cl {
             enum { value = CL_PROGRAM_DEVICES };
             using type = std::vector<cl_device_id>;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 size_t size = str.size();
                 type v; v.reserve(size / sizeof(cl_device_id));
                 for (size_t i = 0; i < size; i += sizeof(cl_device_id)) {
-                    cl_device_id tmp = *reinterpret_cast<cl_device_id*>(str.data());
+                    cl_device_id tmp = *reinterpret_cast<cl_device_id*>(&str[i]);
                     v.push_back(tmp);
                 }
                 return v;
@@ -203,7 +203,7 @@ namespace cl {
             enum { value = CL_PROGRAM_SOURCE };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
@@ -212,11 +212,11 @@ namespace cl {
             enum { value = CL_PROGRAM_BINARY_SIZES };
             using type = std::vector<size_t>;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 size_t size = str.size();
                 type v; v.reserve(size / sizeof(size_t));
                 for (size_t i = 0; i < size; i += sizeof(size_t)) {
-                    size_t tmp = *reinterpret_cast<size_t*>(str.data());
+                    size_t tmp = *reinterpret_cast<size_t*>(&str[i]);
                     v.push_back(tmp);
                 }
                 return v;
@@ -227,7 +227,7 @@ namespace cl {
         //     enum { value = CL_PROGRAM_BINARIES };
         //     using type = unsigned char**;
 
-        //     type CastToType(std::string &str) {
+        //     static type CastToType(std::string &str) {
         //         char* temp = new char[str.size() + 1U];
         //         std::strcpy(temp, str.c_str());
         //         return reinterpret_cast<type>(temp);
@@ -238,8 +238,8 @@ namespace cl {
             enum { value = CL_PROGRAM_NUM_KERNELS };
             using type = size_t;
 
-            type CastToType(std::string &str) {
-                return std::stoull(str);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type*>(str.data());
             }
         };
 
@@ -247,7 +247,7 @@ namespace cl {
             enum { value = CL_PROGRAM_KERNEL_NAMES };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
@@ -257,8 +257,8 @@ namespace cl {
             enum { value = CL_QUEUE_CONTEXT };
             using type = cl_context;
 
-            type CastToType(std::string &str) {
-                return *reinterpret_cast<cl_context*>(&str[0]);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<cl_context*>(str.data());
             }
         };
 
@@ -266,8 +266,8 @@ namespace cl {
             enum { value = CL_QUEUE_DEVICE };
             using type = cl_device_id;
 
-            type CastToType(std::string &str) {
-                auto tmp = *reinterpret_cast<cl_device_id*>(&str[0]);
+            static type CastToType(std::string &str) {
+                auto tmp = *reinterpret_cast<cl_device_id*>(str.data());
                 return tmp;
             }
         };
@@ -276,8 +276,8 @@ namespace cl {
             enum { value = CL_QUEUE_REFERENCE_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -285,7 +285,7 @@ namespace cl {
         //     enum { value = CL_QUEUE_SIZE };
         //     using type = unsigned int;
 
-        //     type CastToType(std::string &str) {
+        //     static type CastToType(std::string &str) {
         //         return static_cast<unsigned int>(std::stoi(str));
         //     }
         // };
@@ -295,8 +295,8 @@ namespace cl {
             enum { value = CL_MEM_TYPE };
             using type = cl_mem_object_type;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -304,8 +304,8 @@ namespace cl {
             enum { value = CL_MEM_FLAGS };
             using type = cl_mem_flags;
 
-            type CastToType(std::string &str) {
-                return std::stoul(str);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -313,8 +313,8 @@ namespace cl {
             enum { value = CL_MEM_SIZE };
             using type = size_t;
 
-            type CastToType(std::string &str) {
-                return std::stoull(str);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -322,8 +322,8 @@ namespace cl {
             enum { value = CL_MEM_HOST_PTR };
             using type = void*;
 
-            type CastToType(std::string &str) {
-                return reinterpret_cast<void*>(&str[0]);
+            static type CastToType(std::string &str) {
+                return reinterpret_cast<type>(str.data());
             }
         };
 
@@ -331,8 +331,8 @@ namespace cl {
             enum { value = CL_MEM_MAP_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -340,8 +340,8 @@ namespace cl {
             enum { value = CL_MEM_REFERENCE_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -349,7 +349,7 @@ namespace cl {
             enum { value = CL_MEM_CONTEXT };
             using type = cl_context;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return *reinterpret_cast<cl_context*>(&str[0]);
             }
         };
@@ -359,7 +359,7 @@ namespace cl {
             enum { value = CL_KERNEL_FUNCTION_NAME };
             using type = std::string;
 
-            type CastToType(std::string &str) {
+            static type CastToType(std::string &str) {
                 return str;
             }
         };
@@ -368,8 +368,8 @@ namespace cl {
             enum { value = CL_KERNEL_NUM_ARGS };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -377,8 +377,8 @@ namespace cl {
             enum { value = CL_KERNEL_REFERENCE_COUNT };
             using type = unsigned int;
 
-            type CastToType(std::string &str) {
-                return static_cast<unsigned int>(std::stoi(str));
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<type *>(str.data());
             }
         };
 
@@ -386,8 +386,8 @@ namespace cl {
             enum { value = CL_KERNEL_CONTEXT };
             using type = cl_context;
 
-            type CastToType(std::string &str) {
-                return *reinterpret_cast<cl_context*>(&str[0]);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<cl_context*>(str.data());
             }
         };
 
@@ -395,8 +395,8 @@ namespace cl {
             enum { value = CL_KERNEL_PROGRAM };
             using type = cl_program;
 
-            type CastToType(std::string &str) {
-                return *reinterpret_cast<cl_program*>(&str[0]);
+            static type CastToType(std::string &str) {
+                return *reinterpret_cast<cl_program*>(str.data());
             }
         };
 
@@ -487,18 +487,18 @@ namespace cl {
 
         template <> struct InfoManager<cl_platform_id> {
             template <cl_platform_info param_name>
-            static typename details::param_traits<cl_platform_info, param_name>::type
+            static typename param_traits<cl_platform_info, param_name>::type
             GetInfo(cl_platform_id platform) {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetPlatformInfo(platform, param_name, 0, NULL, &info_size);
                 PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetPlatformInfo(platform, param_name, info_size, value.c_str(), NULL);
+                std::string value(info_size, '\0');
+                err = clGetPlatformInfo(platform, param_name, info_size, value.data(), NULL);
                 PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_platform_info, param_name>::CastToType(value);
+                return param_traits<cl_platform_info, param_name>::CastToType(value);
             }
         };
 
@@ -508,14 +508,14 @@ namespace cl {
             GetInfo(cl_device_id device) {
                 cl_int err = 0;
                 size_t info_size = 0;
-                clGetDeviceInfo(device, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting device info", err)
+                err = clGetDeviceInfo(device, param_name, 0, NULL, &info_size);
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetDeviceInfo(device, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting device info", err)
+                std::string value(info_size, '\0');
+                err = clGetDeviceInfo(device, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_device_info, param_name>::CastToType(value);
+                return param_traits<cl_device_info, param_name>::CastToType(value);
             }
         };
 
@@ -526,13 +526,13 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetContextInfo(context, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting context info", err)
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetContextInfo(context, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting context info", err)
+                std::string value(info_size, '\0');
+                err = clGetContextInfo(context, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_context_info, param_name>::CastToType(value);
+                return param_traits<cl_context_info, param_name>::CastToType(value);
             }
         };
         
@@ -543,13 +543,13 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetProgramInfo(program, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting program info", err)
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetProgramInfo(program, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting program info", err)
+                std::string value(info_size, '\0');
+                err = clGetProgramInfo(program, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_program_info, param_name>::CastToType(value);
+                return param_traits<cl_program_info, param_name>::CastToType(value);
             }
         };
 
@@ -560,13 +560,13 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetCommandQueueInfo(command_queue, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting cmd queue info", err)
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetCommandQueueInfo(command_queue, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting cmd queue info", err)
+                std::string value(info_size, '\0');
+                err = clGetCommandQueueInfo(command_queue, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_command_queue_info, param_name>::CastToType(value);
+                return param_traits<cl_command_queue_info, param_name>::CastToType(value);
             }
         };
 
@@ -577,13 +577,13 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetMemObjectInfo(memory, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting mem object info", err)
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetMemObjectInfo(memory, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting mem object info", err)
+                std::string value(info_size, '\0');
+                err = clGetMemObjectInfo(memory, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_mem_info, param_name>::CastToType(value);
+                return param_traits<cl_mem_info, param_name>::CastToType(value);
             }
         };
 
@@ -594,13 +594,13 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetKernelInfo(kernel, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting kernel info", err)
+                PARSE_ERR("getting platform info", err)
 
-                std::string value{info_size, '\0'};
-                err = clGetKernelInfo(kernel, param_name, info_size, value.c_str(), NULL);
-                PARSE_ERR("getting kernel info", err)
+                std::string value(info_size, '\0');
+                err = clGetKernelInfo(kernel, param_name, info_size, value.data(), NULL);
+                PARSE_ERR("getting platform info", err)
                 
-                return details::param_traits<cl_kernel_info, param_name>::CastToType(value);
+                return param_traits<cl_kernel_info, param_name>::CastToType(value);
             }
         };
     } // namespace details
