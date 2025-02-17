@@ -1,15 +1,20 @@
 #pragma once
 #include "cl.hpp"
 
-namespace bitonic_sort
-{
+namespace bitonic_sort {
 
 template <typename IterT>
-void bitonic_sort(IterT start_it, IterT end_it)
-{
+void bitonic_sort(IterT start_it, IterT end_it) {
     int size = std::distance(start_it, end_it);
-    cl::Platform platform;
-    cl::Device device(platform);
+
+    std::vector<cl::Platform> platforms;
+    cl::Platform::GetPlatforms(platforms);
+    cl::Platform platform = platforms.front();
+
+    std::vector<cl::Device> devices;
+    platform.GetDevices(CL_DEVICE_TYPE_ALL, devices);
+    cl::Device device = devices.front();
+
     cl::Context context(device);
 
     cl::CommandQueue queue(context);
