@@ -11,7 +11,7 @@
 
 namespace cl {
 
-#define PARSE_ERR(msg_text, err)  \
+    #define PARSE_ERR(msg_text, err)  \
     if (err != CL_SUCCESS) {  \
         std::string msg = "Error with " + std::string(msg_text) + ". Code: " + std::to_string(err); \
         throw std::runtime_error(msg); \
@@ -22,7 +22,7 @@ namespace cl {
         /*  Wrapper  */
         template <typename cl_type> class Wrapper {
         public:
-            Wrapper(cl_type obj = NULL) : obj_(obj) { }
+            Wrapper(cl_type obj = NULL) : obj_(obj) { Retain(); }
             
             Wrapper(const Wrapper &other) : obj_(other.obj_) {
                 Retain();
@@ -57,7 +57,7 @@ namespace cl {
             const cl_type& operator()() const { 
                 return obj_;
             }
-            
+
             cl_type& operator()() {
                 return obj_;
             }
@@ -73,39 +73,85 @@ namespace cl {
             cl_int Release() const {
                 return ReferenceHandler<cl_type>::Release(obj_);
             }
-
-            void GetInfo() const {
-                InfoManager<cl_type>::GetInfo(obj_);
-            }
         protected:
             cl_type obj_;
         }; // class Wrapper
     } // namespace details
 
+    class Device;
+    
     class Platform final : public details::Wrapper<cl_platform_id> {
     public:
         Platform() {
             cl_int err = 0;
             err |= clGetPlatformIDs(1, &obj_, NULL);
-            PARSE_ERR("finding platform", err)
+            PARSE_ERR("finding platform", err);
+        }
+
+        explicit Platform(cl_platform_id id) : details::Wrapper<cl_platform_id>(id) {}
+
+        static void GetPlatforms(std::vector<Platform> &platforms) {
+            cl_uint num_platforms;
+            cl_int err = clGetPlatformIDs(0, NULL, &num_platforms);
+            // PARSE_ERR("finding platforms", err);
+
+            if (num_platforms == 0) {
+                throw std::runtime_error("platforms were not found");
+            }
+
+            std::vector<cl_platform_id> platform_ids(num_platforms);
+            err = clGetPlatformIDs(num_platforms, platform_ids.data(), NULL);
+            PARSE_ERR("getting platform IDs", err);
+
+            platforms.clear();
+            platforms.reserve(num_platforms);
+            for (auto id : platform_ids) {
+                platforms.emplace_back(id);
+            }
+        }
+
+        void GetDevices(cl_device_type device_type, std::vector<Device> &devices) const {
+            cl_uint num_devices;
+
+            cl_int err = clGetDeviceIDs(obj_, device_type, 0, nullptr, &num_devices);
+            
+            if (num_devices == 0) {
+                throw std::runtime_error("devices were not found in this platform");
+            }
+
+            std::vector<cl_device_id> device_ids(num_devices);
+            err = clGetDeviceIDs(obj_, device_type, num_devices, device_ids.data(), nullptr);
+            PARSE_ERR("getting device IDs", err);
+
+            devices.clear();
+            devices.reserve(num_devices);
+            for (auto id : device_ids) {
+                devices.emplace_back(id, *this);
+            }
+        }
+
+        template <cl_platform_info param_name>
+        typename details::param_traits<cl_platform_info, param_name>::type 
+        GetInfo() const {
+            return details::InfoManager<cl_platform_id>::template GetInfo<param_name>(obj_);
         }
     }; // class Platform
 
     class Device final : public details::Wrapper<cl_device_id> {
     public:
         Device() : platform_() {
-            cl_int err = 0;
-            err |= clGetDeviceIDs(platform_.Get(), CL_DEVICE_TYPE_DEFAULT, 1, &obj_, NULL);
+            cl_int err = clGetDeviceIDs(platform_.Get(), CL_DEVICE_TYPE_DEFAULT, 1, &obj_, NULL);
             PARSE_ERR("finding device", err);
         }
 
+        Device(cl_device_id id, const Platform& platform) : details::Wrapper<cl_device_id>(id), platform_(platform) {}
+
         Device(const Platform &platform) : platform_(platform) {
-            cl_int err = 0;
-            err |= clGetDeviceIDs(platform_.Get(), CL_DEVICE_TYPE_GPU, 1, &obj_, NULL);
+            cl_int err = clGetDeviceIDs(platform_.Get(), CL_DEVICE_TYPE_GPU, 1, &obj_, NULL);
             if (err == CL_DEVICE_NOT_FOUND)
                 err = clGetDeviceIDs(platform_.Get(), CL_DEVICE_TYPE_CPU, 1, &obj_, NULL);
 
-            PARSE_ERR("finding device", err)
+            PARSE_ERR("finding device", err);
         }
 
         Device(const Device &other) : details::Wrapper<cl_device_id>(other), platform_(other.platform_) {}
@@ -128,6 +174,12 @@ namespace cl {
 
             return *this;
         }
+        
+        template <cl_device_info param_name>
+        typename details::param_traits<cl_device_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_device_id>::template GetInfo<param_name>(obj_);
+        }
 
     private:
         Platform platform_;
@@ -139,14 +191,14 @@ namespace cl {
         
         Context(const Device &device) : device_(device) {
             cl_int err = 0;
-            obj_ = clCreateContext(NULL, 1, &device(), NULL, NULL, &err);
-            PARSE_ERR("creating context", err)
+            obj_ = clCreateContext(NULL, 1, &device_(), NULL, NULL, &err);
+            PARSE_ERR("creating context", err);
         }
 
-        Context(const Context &other) : details::Wrapper<cl_context>(std::move(other)), device_(other.device_) {}
+        Context(const Context &other) : details::Wrapper<cl_context>(other), device_(other.device_) {}
 
         Context &operator=(const Context &other) {
-            details::Wrapper<cl_context>::operator=(std::move(other));
+            details::Wrapper<cl_context>::operator=(other);
             device_ = other.device_;
             return *this;
         }
@@ -168,6 +220,12 @@ namespace cl {
             return device_;
         }
 
+        template <cl_context_info param_name>
+        typename details::param_traits<cl_context_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_context>::template GetInfo<param_name>(obj_);
+        }
+
     private:
         Device device_;
     }; // class Context
@@ -183,7 +241,8 @@ namespace cl {
             size_t size = program_text.size();
 
             obj_ = clCreateProgramWithSource(context_.Get(), 1, &text, &size, &err);
-            err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
+            // err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
+            err |= clBuildProgram(obj_, 1, &context_.GetDevice()(), NULL, NULL, NULL);
 
             PARSE_ERR("compiling program", err);
         }
@@ -192,8 +251,9 @@ namespace cl {
             cl_int err = 0;
             obj_ = clCreateProgramWithSource(context_.Get(), 1, program_text, NULL, &err);
             PARSE_ERR("compiling program", err);
-
-            err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
+            
+            // err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
+            err |= clBuildProgram(obj_, 1, &context_.GetDevice()(), NULL, NULL, NULL);
             PARSE_ERR("compiling program", err);
         }
         
@@ -221,6 +281,12 @@ namespace cl {
 
         Context GetContext() const {
             return context_;
+        }
+
+        template <cl_program_info param_name>
+        typename details::param_traits<cl_program_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_program>::template GetInfo<param_name>(obj_);
         }
 
     private:
@@ -279,6 +345,12 @@ namespace cl {
             return context_;
         }
 
+        template <cl_command_queue_info param_name>
+        typename details::param_traits<cl_command_queue_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_command_queue>::template GetInfo<param_name>(obj_);
+        }
+
     private:
         Context context_;
     };
@@ -290,7 +362,7 @@ namespace cl {
         Buffer(const CommandQueue &queue, cl_mem_flags flag, size_t size) : size_(size), queue_(queue) {
             cl_int err = 0;
             obj_ = clCreateBuffer(queue_.GetContext().Get(), flag, size, NULL, &err);
-            PARSE_ERR("creating buffer", err)
+            PARSE_ERR("creating buffer", err);
         }
 
         Buffer(const Buffer &other) : details::Wrapper<cl_mem>(other), size_(other.size_), queue_(other.queue_) {}
@@ -366,6 +438,12 @@ namespace cl {
             PARSE_ERR("copy to buffer", err)
         }
 
+        template <cl_mem_info param_name>
+        typename details::param_traits<cl_mem_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_mem>::template GetInfo<param_name>(obj_);
+        }
+
     private:
         size_t size_ = 0;
         CommandQueue queue_;
@@ -375,10 +453,9 @@ namespace cl {
     public:
         Kernel() : details::Wrapper<cl_kernel>(NULL), program_(), queue_() {}
 
-        Kernel(const Program &program, const CommandQueue &queue, std::string &func_name) :
+        Kernel(const Program &program, const CommandQueue &queue, const std::string &func_name) :
                 program_(program), queue_(queue) {
             cl_int err = 0;
-
             obj_ = clCreateKernel(program_.Get(), func_name.data(), &err);
             PARSE_ERR("creating kernel", err)
         }
@@ -438,6 +515,12 @@ namespace cl {
             PARSE_ERR("invoke kernel", err)
             err |= clFinish(queue_.Get());
             PARSE_ERR("finish kernel", err)
+        }
+
+        template <cl_kernel_info param_name>
+        typename details::param_traits<cl_kernel_info, param_name>::type 
+        GetInfo() {
+            return details::InfoManager<cl_kernel>::template GetInfo<param_name>(obj_);
         }
 
     private:
