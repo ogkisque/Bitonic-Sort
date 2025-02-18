@@ -1,0 +1,33 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: CMake on a single platform
+
+on:
+  push:
+    branches: [ "cl_realization" ]
+  pull_request:
+    branches: [ "cl_realization" ]
+    
+jobs:
+  release:
+    defaults:
+      run:
+        shell: bash
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Install google-test, also install g++
+      run: sudo apt-get install libgtest-dev googletest google-mock libboost-dev g++
+    
+    - name: Install OpenCL headers and loader
+      run: sudo apt update; sudo apt install ocl-icd-libopencl1 ocl-icd-opencl-dev opencl-headers
+
+    - name: CMake release config and build
+      run: cmake -S . -B build -DWITH_TESTS=1 -DCMAKE_BUILD_TYPE=Release; cmake --build build
+        
+    - name: CMake debug config and build
+      run: cmake -S . -B debug -DWITH_TESTS=1 -DCMAKE_BUILD_TYPE=Debug; cmake --build debug
