@@ -9,8 +9,8 @@
 
 
 int main() {
-    std::vector<int> data{1, 6, 2, 7, 7, 2, 9, 3, 11, 14, 57, 19, 29, 31, 3, 9};
-    bitonic_sort::bitonic_sort(data.begin(), data.end());
+    std::vector<int> data{1, 6, 2, 7, 7, 2, 9, 3, 11, 14, 57, 19, 29, 31, 3, 9, 99, -6};
+    bitonic_sort::BitonicSort(data);
 
     for (auto &it : data)
         std::cout << it << std::endl;

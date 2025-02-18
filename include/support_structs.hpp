@@ -417,67 +417,55 @@ namespace cl {
 
         template <> struct ReferenceHandler<cl_device_id> {
             static cl_int Retain(cl_device_id device) { 
-                std::cout << "retain device" << std::endl;
                 return ::clRetainDevice(device);
             }
 
             static cl_int Release(cl_device_id device) { 
-                std::cout << "release device" << std::endl;
                 return ::clReleaseDevice(device);
             }
         };
 
         template <> struct ReferenceHandler<cl_context> {
             static cl_int Retain(cl_context context) { 
-                std::cout << "retain context" << std::endl;
                 return ::clRetainContext(context); 
             }
             static cl_int Release(cl_context context) { 
-                std::cout << "release context" << std::endl;
                 return ::clReleaseContext(context); 
             }
         };
         
         template <> struct ReferenceHandler<cl_program> {
-            static cl_int Retain(cl_program program) { 
-                std::cout << "retain program" << std::endl;                
+            static cl_int Retain(cl_program program) {          
                 return ::clRetainProgram(program); 
             }
             static cl_int Release(cl_program program) {
-                std::cout << "release program" << std::endl;
                 return ::clReleaseProgram(program); 
             }
         };
 
         template <> struct ReferenceHandler<cl_command_queue> {
             static cl_int Retain(cl_command_queue command_queue) { 
-                std::cout << "retain com" << std::endl;
                 return ::clRetainCommandQueue(command_queue); 
             }
             static cl_int Release(cl_command_queue command_queue) { 
-                std::cout << "release com" << std::endl;
                 return ::clReleaseCommandQueue(command_queue);
             }
         };
 
         template <> struct ReferenceHandler<cl_mem> {
             static cl_int Retain(cl_mem memory) { 
-                std::cout << "retain mem" << std::endl;
                 return ::clRetainMemObject(memory); 
             }
             static cl_int Release(cl_mem memory) { 
-                std::cout << "release mem" << std::endl;
                 return ::clReleaseMemObject(memory); 
             }
         };
 
         template <> struct ReferenceHandler<cl_kernel> {
             static cl_int Retain(cl_kernel kernal) { 
-                std::cout << "retain kernel" << std::endl;
                 return ::clRetainKernel(kernal); 
             }
             static cl_int Release(cl_kernel kernal) { 
-                std::cout << "release kernel" << std::endl;
                 return ::clReleaseKernel(kernal); 
             }
         };
@@ -509,11 +497,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetDeviceInfo(device, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting device info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetDeviceInfo(device, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting device info", err)
                 
                 return param_traits<cl_device_info, param_name>::CastToType(value);
             }
@@ -526,11 +514,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetContextInfo(context, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting context info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetContextInfo(context, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting context info", err)
                 
                 return param_traits<cl_context_info, param_name>::CastToType(value);
             }
@@ -543,11 +531,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetProgramInfo(program, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting program info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetProgramInfo(program, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting program info", err)
                 
                 return param_traits<cl_program_info, param_name>::CastToType(value);
             }
@@ -560,11 +548,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetCommandQueueInfo(command_queue, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting command_queue info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetCommandQueueInfo(command_queue, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting command_queue info", err)
                 
                 return param_traits<cl_command_queue_info, param_name>::CastToType(value);
             }
@@ -577,11 +565,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetMemObjectInfo(memory, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting memory info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetMemObjectInfo(memory, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting memory info", err)
                 
                 return param_traits<cl_mem_info, param_name>::CastToType(value);
             }
@@ -594,11 +582,11 @@ namespace cl {
                 cl_int err = 0;
                 size_t info_size = 0;
                 err = clGetKernelInfo(kernel, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting kernel info", err)
 
                 std::string value(info_size, '\0');
                 err = clGetKernelInfo(kernel, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                PARSE_ERR("getting kernel info", err)
                 
                 return param_traits<cl_kernel_info, param_name>::CastToType(value);
             }

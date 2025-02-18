@@ -1,5 +1,10 @@
 #include "cl.hpp"
+#include "bitonic.hpp"
 #include <gtest/gtest.h>
+#include <ctime>
+#include <vector>
+#include <random>
+#include <algorithm>
 
 TEST(OpenCLTest, PlatformTest) {
     std::vector<cl::Platform> platforms;
@@ -61,26 +66,20 @@ TEST(OpenCLTest, CommandQueueTest) {
     std::vector<cl::Device> devices;
     platform.GetDevices(CL_DEVICE_TYPE_ALL, devices);
     cl::Device device = devices.front();
-    std::cerr << "1" << std::endl;
     cl::Context context(device);
 
-    std::cerr << "2" << std::endl;
     cl::CommandQueue queue(context);
-    std::cerr << "2.5" << std::endl;
     ASSERT_EQ(queue.template GetInfo<CL_QUEUE_CONTEXT>(), context.Get());
-    std::cerr << "2.6" << std::endl;
     ASSERT_EQ(queue.template GetInfo<CL_QUEUE_DEVICE>(), device.Get());
-    std::cerr << "2.7" << std::endl;
     ASSERT_EQ(queue.template GetInfo<CL_QUEUE_REFERENCE_COUNT>(), 1U);
-    std::cerr << "3" << std::endl;
+
     cl::CommandQueue queue1(queue);
     cl::CommandQueue queue2(queue1);
-    std::cerr << "4" << std::endl;
+
     ASSERT_EQ(queue.Get(), queue1.Get());
     ASSERT_EQ(queue1.Get(), queue2.Get());
     ASSERT_EQ(queue2.template GetInfo<CL_QUEUE_REFERENCE_COUNT>(), 3U);
 
-    std::cerr << "5" << std::endl;
     cl::CommandQueue queue3(std::move(queue2));
     ASSERT_EQ(queue.Get(), queue3.Get());
     ASSERT_EQ(queue3.template GetInfo<CL_QUEUE_REFERENCE_COUNT>(), 3U);
@@ -109,18 +108,309 @@ TEST(OpenCLTest, ProgramTest) {
     ASSERT_EQ(program.template GetInfo<CL_PROGRAM_NUM_DEVICES>(), 1U);
     auto device_vec = program.template GetInfo<CL_PROGRAM_DEVICES>();
     ASSERT_EQ(device_vec.front(), device.Get());
-    ASSERT_EQ(program.template GetInfo<CL_PROGRAM_NUM_KERNELS>(), 0U);
+    ASSERT_EQ(program.template GetInfo<CL_PROGRAM_NUM_KERNELS>(), 1U);
 
-    ASSERT_EQ(program.template GetInfo<CL_PROGRAM_SOURCE>(), program_src);
+    ASSERT_EQ(program.template GetInfo<CL_PROGRAM_SOURCE>(), program_src + '\0');
 
     cl::Program program1 = program;
     cl::Program program2 = program1;
 
     ASSERT_EQ(program.Get(), program1.Get());
     ASSERT_EQ(program1.Get(), program2.Get());
-    ASSERT_EQ(program2.template GetInfo<CL_QUEUE_REFERENCE_COUNT>(), 3U);
+    ASSERT_EQ(program2.template GetInfo<CL_PROGRAM_REFERENCE_COUNT>(), 3U);
 
     cl::Program program3(std::move(program2));
     ASSERT_EQ(program.Get(), program3.Get());
-    ASSERT_EQ(program3.template GetInfo<CL_QUEUE_REFERENCE_COUNT>(), 3U);    
+    ASSERT_EQ(program3.template GetInfo<CL_PROGRAM_REFERENCE_COUNT>(), 3U); 
+}
+
+TEST(BitonicSortTest, Test1) {
+    const int size1 = 16;
+    const int size2 = 32;
+    const int size3 = 64;
+    const int size4 = 128;
+    const int size5 = 256;
+    const int size6 = 512;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(1, 100);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data1;
+    data1.reserve(size1);
+
+    for (int i = 0; i < size1; i++)
+        data1[i] = distr(gen);
+
+    std::vector<int> data1_copy{data1};
+
+    bitonic_sort::BitonicSort(data1);
+    std::sort(data1_copy.begin(), data1_copy.end());
+
+    ASSERT_EQ(data1, data1_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data2;
+    data2.reserve(size2);
+
+    for (int i = 0; i < size2; i++)
+        data2[i] = distr(gen);
+
+    std::vector<int> data2_copy{data2};
+
+    bitonic_sort::BitonicSort(data2);
+    std::sort(data2_copy.begin(), data2_copy.end());
+
+    ASSERT_EQ(data2, data2_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data3;
+    data3.reserve(size3);
+
+    for (int i = 0; i < size3; i++)
+        data3[i] = distr(gen);
+
+    std::vector<int> data3_copy{data3};
+
+    bitonic_sort::BitonicSort(data3);
+    std::sort(data3_copy.begin(), data3_copy.end());
+
+    ASSERT_EQ(data3, data3_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data4;
+    data4.reserve(size4);
+
+    for (int i = 0; i < size4; i++)
+        data4[i] = distr(gen);
+
+    std::vector<int> data4_copy{data4};
+
+    bitonic_sort::BitonicSort(data4);
+    std::sort(data4_copy.begin(), data4_copy.end());
+
+    ASSERT_EQ(data4, data4_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data5;
+    data5.reserve(size5);
+
+    for (int i = 0; i < size5; i++)
+        data5[i] = distr(gen);
+
+    std::vector<int> data5_copy{data5};
+
+    bitonic_sort::BitonicSort(data5);
+    std::sort(data5_copy.begin(), data5_copy.end());
+
+    ASSERT_EQ(data5, data5_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data6;
+    data6.reserve(size6);
+
+    for (int i = 0; i < size6; i++)
+        data6[i] = distr(gen);
+
+    std::vector<int> data6_copy{data6};
+
+    bitonic_sort::BitonicSort(data6);
+    std::sort(data6_copy.begin(), data6_copy.end());
+
+    ASSERT_EQ(data6, data6_copy);
+}
+
+TEST(BitonicSortTest, Test2) {
+    const int size1 = 16;
+    const int size2 = 32;
+    const int size3 = 64;
+    const int size4 = 128;
+    const int size5 = 256;
+    const int size6 = 512;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> distr(0, 10);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data1;
+    data1.reserve(size1);
+
+    for (int i = 0; i < size1; i++)
+        data1[i] = distr(gen);
+
+    std::vector<float> data1_copy{data1};
+
+    bitonic_sort::BitonicSort(data1);
+    std::sort(data1_copy.begin(), data1_copy.end());
+
+    ASSERT_EQ(data1, data1_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data2;
+    data2.reserve(size2);
+
+    for (int i = 0; i < size2; i++)
+        data2[i] = distr(gen);
+
+    std::vector<float> data2_copy{data2};
+
+    bitonic_sort::BitonicSort(data2);
+    std::sort(data2_copy.begin(), data2_copy.end());
+
+    ASSERT_EQ(data2, data2_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data3;
+    data3.reserve(size3);
+
+    for (int i = 0; i < size3; i++)
+        data3[i] = distr(gen);
+
+    std::vector<float> data3_copy{data3};
+
+    bitonic_sort::BitonicSort(data3);
+    std::sort(data3_copy.begin(), data3_copy.end());
+
+    ASSERT_EQ(data3, data3_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data4;
+    data4.reserve(size4);
+
+    for (int i = 0; i < size4; i++)
+        data4[i] = distr(gen);
+
+    std::vector<float> data4_copy{data4};
+
+    bitonic_sort::BitonicSort(data4);
+    std::sort(data4_copy.begin(), data4_copy.end());
+
+    ASSERT_EQ(data4, data4_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data5;
+    data5.reserve(size5);
+
+    for (int i = 0; i < size5; i++)
+        data5[i] = distr(gen);
+
+    std::vector<float> data5_copy{data5};
+
+    bitonic_sort::BitonicSort(data5);
+    std::sort(data5_copy.begin(), data5_copy.end());
+
+    ASSERT_EQ(data5, data5_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data6;
+    data6.reserve(size6);
+
+    for (int i = 0; i < size6; i++)
+        data6[i] = distr(gen);
+
+    std::vector<float> data6_copy{data6};
+
+    bitonic_sort::BitonicSort(data6);
+    std::sort(data6_copy.begin(), data6_copy.end());
+
+    ASSERT_EQ(data6, data6_copy);
+}
+
+TEST(BitonicSortTest, Test3) {
+    const int size1 = 13;
+    const int size2 = 24;
+    const int size3 = 37;
+    const int size4 = 99;
+    const int size5 = 175;
+    const int size6 = 431;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(1, 100);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data1;
+    data1.reserve(size1);
+
+    for (int i = 0; i < size1; i++)
+        data1[i] = distr(gen);
+
+    std::vector<int> data1_copy{data1};
+
+    bitonic_sort::BitonicSort(data1);
+    std::sort(data1_copy.begin(), data1_copy.end());
+
+    ASSERT_EQ(data1, data1_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data2;
+    data2.reserve(size2);
+
+    for (int i = 0; i < size2; i++)
+        data2[i] = distr(gen);
+
+    std::vector<int> data2_copy{data2};
+
+    bitonic_sort::BitonicSort(data2);
+    std::sort(data2_copy.begin(), data2_copy.end());
+
+    ASSERT_EQ(data2, data2_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data3;
+    data3.reserve(size3);
+
+    for (int i = 0; i < size3; i++)
+        data3[i] = distr(gen);
+
+    std::vector<int> data3_copy{data3};
+
+    bitonic_sort::BitonicSort(data3);
+    std::sort(data3_copy.begin(), data3_copy.end());
+
+    ASSERT_EQ(data3, data3_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data4;
+    data4.reserve(size4);
+
+    for (int i = 0; i < size4; i++)
+        data4[i] = distr(gen);
+
+    std::vector<int> data4_copy{data4};
+
+    bitonic_sort::BitonicSort(data4);
+    std::sort(data4_copy.begin(), data4_copy.end());
+
+    ASSERT_EQ(data4, data4_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data5;
+    data5.reserve(size5);
+
+    for (int i = 0; i < size5; i++)
+        data5[i] = distr(gen);
+
+    std::vector<int> data5_copy{data5};
+
+    bitonic_sort::BitonicSort(data5);
+    std::sort(data5_copy.begin(), data5_copy.end());
+
+    ASSERT_EQ(data5, data5_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<int> data6;
+    data6.reserve(size6);
+
+    for (int i = 0; i < size6; i++)
+        data6[i] = distr(gen);
+
+    std::vector<int> data6_copy{data6};
+
+    bitonic_sort::BitonicSort(data6);
+    std::sort(data6_copy.begin(), data6_copy.end());
+
+    ASSERT_EQ(data6, data6_copy);
 }
