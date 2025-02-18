@@ -9,3 +9,7 @@ if (WITH_TESTS)
     message("Build binary file for UNIT tests ...")
     add_subdirectory(tests)
 endif()
+
+if (WITH_BENCHMARKS)
+    add_subdirectory(benchs)
+endif()

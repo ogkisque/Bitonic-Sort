@@ -493,7 +493,7 @@ namespace cl {
 
         void SetArg(cl_uint arg_num, const Buffer &buf) {
             cl_mem mem = buf.Get();
-            ::clRetainMemObject(mem);
+            buf.Retain();
             cl_int err = clSetKernelArg(obj_, arg_num, sizeof(cl_mem), &mem);
             PARSE_ERR("setting arg in kernel", err)
         }
