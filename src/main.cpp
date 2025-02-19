@@ -7,14 +7,39 @@
 #include <iostream>
 #include <vector>
 
+namespace {
+    bool GetInput(std::vector<int> &data) {
+        size_t size = 0;
+        std::cin >> size;
+        if (!std::cin.good() || size <= 0) {
+            std::cout << "Incorrect data" << std::endl;
+            return false;
+        }
+
+        data.reserve(size);
+        for (size_t i = 0; i < size; ++i) {
+            int x = 0;
+            std::cin >> x;
+            data.push_back(x);
+            if (!std::cin.good()) {
+                std::cout << "Incorrect data" << std::endl;
+                return false;
+            }
+        }
+    
+        return true;
+    }
+} // namespace
 
 int main() {
-    std::vector<int> data{1, 6, 2, 7, 7, 2, 9, 3, 11, 14, 57, 19, 29, 31, 3, 9, 99, -6};
+    std::vector<int> data{};
+    if (!GetInput(data))
+        return 1;
+    
     bitonic_sort::BitonicSort(data);
 
-    for (auto &it : data)
+    for (auto &&it : data)
         std::cout << it << std::endl;
 
     return 0;
 }
-
