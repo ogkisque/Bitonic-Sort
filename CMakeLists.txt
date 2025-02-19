@@ -11,5 +11,6 @@ if (WITH_TESTS)
 endif()
 
 if (WITH_BENCHMARKS)
+    message("Build binary file for benchmarks ...")
     add_subdirectory(benchs)
 endif()
