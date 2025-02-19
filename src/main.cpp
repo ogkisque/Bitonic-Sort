@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace {
-    bool GetInput(std::vector<int> &data) {
+    bool GetInput(std::vector<double> &data) {
         size_t size = 0;
         std::cin >> size;
         if (!std::cin.good() || size <= 0) {
@@ -18,7 +18,7 @@ namespace {
 
         data.reserve(size);
         for (size_t i = 0; i < size; ++i) {
-            int x = 0;
+            double x = 0;
             std::cin >> x;
             data.push_back(x);
             if (!std::cin.good()) {
@@ -32,13 +32,13 @@ namespace {
 } // namespace
 
 int main() {
-    std::vector<int> data{};
+    std::vector<double> data{};
     if (!GetInput(data))
         return 1;
     
     bitonic_sort::BitonicSort(data);
 
-    for (auto &&it : data)
+    for (auto it : data)
         std::cout << it << std::endl;
 
     return 0;
