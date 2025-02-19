@@ -10,15 +10,8 @@
 #include "support_structs.hpp"
 
 namespace cl {
-
-    #define PARSE_ERR(msg_text, err)  \
-    if (err != CL_SUCCESS) {  \
-        std::string msg = "Error with " + std::string(msg_text) + ". Code: " + std::to_string(err); \
-        throw std::runtime_error(msg); \
-    } \
-
     namespace details {
-        
+
         /*  Wrapper  */
         template <typename cl_type> class Wrapper {
         public:
