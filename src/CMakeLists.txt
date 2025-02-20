@@ -2,8 +2,6 @@ set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
 find_package(OpenCL REQUIRED)
 
-add_compile_options(-Wall -Wextra -lOpenCL)
-
 add_library(cl_lib INTERFACE)
 target_compile_features(cl_lib INTERFACE cxx_std_20)
 target_include_directories(cl_lib INTERFACE ${INCLUDE_DIR})
