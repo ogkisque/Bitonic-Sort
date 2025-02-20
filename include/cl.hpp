@@ -394,6 +394,7 @@ namespace cl {
 
             T *data = (T*) malloc(size_);
             std::copy(start_it, end_it, data);
+
             err = clEnqueueWriteBuffer(queue_.Get(), obj_, CL_TRUE, 0, size_, data, 0, NULL, NULL);
             free(data);
             PARSE_ERR("copy to buffer", err)
@@ -409,9 +410,10 @@ namespace cl {
             cl_int err = 0;
             T *res = (T*) malloc(size_);
             err |= clEnqueueReadBuffer(queue_.Get(), obj_, CL_TRUE, 0, size_, res, 0, NULL, NULL);
-            PARSE_ERR("copy from cl buffer", err); 
+            PARSE_ERR("copy from cl buffer", err);
 
             size_t num_elems = size_ / sizeof(T);
+
             IterT it = start_it;
             for (size_t i = 0; i < num_elems; i++, it++)
                 *it = res[i];

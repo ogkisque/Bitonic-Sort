@@ -10,10 +10,10 @@
 #include "hayai_main.hpp"
 #include "bitonic.hpp"
 
-std::vector<int> data1;
-std::vector<int> data2;
-std::vector<int> data1_copy;
-std::vector<int> data2_copy;
+std::vector<float> data1;
+std::vector<float> data2;
+std::vector<float> data1_copy;
+std::vector<float> data2_copy;
 
 BENCHMARK(Sort1, Bitonic, 1, 1) {
     bitonic_sort::BitonicSort(data1);

@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace {
-    bool GetInput(std::vector<double> &data) {
+    bool GetInput(std::vector<float> &data) {
         size_t size = 0;
         std::cin >> size;
         if (!std::cin.good() || size <= 0) {
@@ -32,7 +32,7 @@ namespace {
 } // namespace
 
 int main() {
-    std::vector<double> data{};
+    std::vector<float> data{};
     if (!GetInput(data))
         return 1;
     

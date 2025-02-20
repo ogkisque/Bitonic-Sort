@@ -137,13 +137,13 @@ TEST(BitonicSortTest, Test1) {
     std::uniform_int_distribution<> distr(1, 100);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data1;
+    std::vector<float> data1;
     data1.reserve(size1);
 
     for (int i = 0; i < size1; i++)
-        data1[i] = distr(gen);
+        data1.push_back(distr(gen));
 
-    std::vector<int> data1_copy{data1};
+    std::vector<float> data1_copy{data1};
 
     bitonic_sort::BitonicSort(data1);
     std::sort(data1_copy.begin(), data1_copy.end());
@@ -151,13 +151,13 @@ TEST(BitonicSortTest, Test1) {
     ASSERT_EQ(data1, data1_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data2;
+    std::vector<float> data2;
     data2.reserve(size2);
 
     for (int i = 0; i < size2; i++)
-        data2[i] = distr(gen);
+        data2.push_back(distr(gen));
 
-    std::vector<int> data2_copy{data2};
+    std::vector<float> data2_copy{data2};
 
     bitonic_sort::BitonicSort(data2);
     std::sort(data2_copy.begin(), data2_copy.end());
@@ -165,13 +165,13 @@ TEST(BitonicSortTest, Test1) {
     ASSERT_EQ(data2, data2_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data3;
+    std::vector<float> data3;
     data3.reserve(size3);
 
     for (int i = 0; i < size3; i++)
-        data3[i] = distr(gen);
+        data3.push_back(distr(gen));
 
-    std::vector<int> data3_copy{data3};
+    std::vector<float> data3_copy{data3};
 
     bitonic_sort::BitonicSort(data3);
     std::sort(data3_copy.begin(), data3_copy.end());
@@ -179,13 +179,13 @@ TEST(BitonicSortTest, Test1) {
     ASSERT_EQ(data3, data3_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data4;
+    std::vector<float> data4;
     data4.reserve(size4);
 
     for (int i = 0; i < size4; i++)
-        data4[i] = distr(gen);
+        data4.push_back(distr(gen));
 
-    std::vector<int> data4_copy{data4};
+    std::vector<float> data4_copy{data4};
 
     bitonic_sort::BitonicSort(data4);
     std::sort(data4_copy.begin(), data4_copy.end());
@@ -193,13 +193,13 @@ TEST(BitonicSortTest, Test1) {
     ASSERT_EQ(data4, data4_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data5;
+    std::vector<float> data5;
     data5.reserve(size5);
 
     for (int i = 0; i < size5; i++)
-        data5[i] = distr(gen);
+        data5.push_back(distr(gen));
 
-    std::vector<int> data5_copy{data5};
+    std::vector<float> data5_copy{data5};
 
     bitonic_sort::BitonicSort(data5);
     std::sort(data5_copy.begin(), data5_copy.end());
@@ -207,13 +207,13 @@ TEST(BitonicSortTest, Test1) {
     ASSERT_EQ(data5, data5_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data6;
+    std::vector<float> data6;
     data6.reserve(size6);
 
     for (int i = 0; i < size6; i++)
-        data6[i] = distr(gen);
+        data6.push_back(distr(gen));
 
-    std::vector<int> data6_copy{data6};
+    std::vector<float> data6_copy{data6};
 
     bitonic_sort::BitonicSort(data6);
     std::sort(data6_copy.begin(), data6_copy.end());
@@ -238,7 +238,7 @@ TEST(BitonicSortTest, Test2) {
     data1.reserve(size1);
 
     for (int i = 0; i < size1; i++)
-        data1[i] = distr(gen);
+        data1.push_back(distr(gen));
 
     std::vector<float> data1_copy{data1};
 
@@ -252,7 +252,7 @@ TEST(BitonicSortTest, Test2) {
     data2.reserve(size2);
 
     for (int i = 0; i < size2; i++)
-        data2[i] = distr(gen);
+        data2.push_back(distr(gen));
 
     std::vector<float> data2_copy{data2};
 
@@ -266,7 +266,7 @@ TEST(BitonicSortTest, Test2) {
     data3.reserve(size3);
 
     for (int i = 0; i < size3; i++)
-        data3[i] = distr(gen);
+        data3.push_back(distr(gen));
 
     std::vector<float> data3_copy{data3};
 
@@ -280,7 +280,7 @@ TEST(BitonicSortTest, Test2) {
     data4.reserve(size4);
 
     for (int i = 0; i < size4; i++)
-        data4[i] = distr(gen);
+        data4.push_back(distr(gen));
 
     std::vector<float> data4_copy{data4};
 
@@ -294,7 +294,7 @@ TEST(BitonicSortTest, Test2) {
     data5.reserve(size5);
 
     for (int i = 0; i < size5; i++)
-        data5[i] = distr(gen);
+        data5.push_back(distr(gen));
 
     std::vector<float> data5_copy{data5};
 
@@ -308,7 +308,7 @@ TEST(BitonicSortTest, Test2) {
     data6.reserve(size6);
 
     for (int i = 0; i < size6; i++)
-        data6[i] = distr(gen);
+        data6.push_back(distr(gen));
 
     std::vector<float> data6_copy{data6};
 
@@ -331,13 +331,13 @@ TEST(BitonicSortTest, Test3) {
     std::uniform_int_distribution<> distr(1, 100);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data1;
+    std::vector<float> data1;
     data1.reserve(size1);
 
     for (int i = 0; i < size1; i++)
-        data1[i] = distr(gen);
+        data1.push_back(distr(gen));
 
-    std::vector<int> data1_copy{data1};
+    std::vector<float> data1_copy{data1};
 
     bitonic_sort::BitonicSort(data1);
     std::sort(data1_copy.begin(), data1_copy.end());
@@ -345,13 +345,13 @@ TEST(BitonicSortTest, Test3) {
     ASSERT_EQ(data1, data1_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data2;
+    std::vector<float> data2;
     data2.reserve(size2);
 
     for (int i = 0; i < size2; i++)
-        data2[i] = distr(gen);
+        data2.push_back(distr(gen));
 
-    std::vector<int> data2_copy{data2};
+    std::vector<float> data2_copy{data2};
 
     bitonic_sort::BitonicSort(data2);
     std::sort(data2_copy.begin(), data2_copy.end());
@@ -359,13 +359,13 @@ TEST(BitonicSortTest, Test3) {
     ASSERT_EQ(data2, data2_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data3;
+    std::vector<float> data3;
     data3.reserve(size3);
 
     for (int i = 0; i < size3; i++)
-        data3[i] = distr(gen);
+        data3.push_back(distr(gen));
 
-    std::vector<int> data3_copy{data3};
+    std::vector<float> data3_copy{data3};
 
     bitonic_sort::BitonicSort(data3);
     std::sort(data3_copy.begin(), data3_copy.end());
@@ -373,13 +373,13 @@ TEST(BitonicSortTest, Test3) {
     ASSERT_EQ(data3, data3_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data4;
+    std::vector<float> data4;
     data4.reserve(size4);
 
     for (int i = 0; i < size4; i++)
-        data4[i] = distr(gen);
+        data4.push_back(distr(gen));
 
-    std::vector<int> data4_copy{data4};
+    std::vector<float> data4_copy{data4};
 
     bitonic_sort::BitonicSort(data4);
     std::sort(data4_copy.begin(), data4_copy.end());
@@ -387,13 +387,13 @@ TEST(BitonicSortTest, Test3) {
     ASSERT_EQ(data4, data4_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data5;
+    std::vector<float> data5;
     data5.reserve(size5);
 
     for (int i = 0; i < size5; i++)
-        data5[i] = distr(gen);
+        data5.push_back(distr(gen));
 
-    std::vector<int> data5_copy{data5};
+    std::vector<float> data5_copy{data5};
 
     bitonic_sort::BitonicSort(data5);
     std::sort(data5_copy.begin(), data5_copy.end());
@@ -401,13 +401,13 @@ TEST(BitonicSortTest, Test3) {
     ASSERT_EQ(data5, data5_copy);
 
     /////////////////////////////////////////////////////////////////////
-    std::vector<int> data6;
+    std::vector<float> data6;
     data6.reserve(size6);
 
     for (int i = 0; i < size6; i++)
-        data6[i] = distr(gen);
+        data6.push_back(distr(gen));
 
-    std::vector<int> data6_copy{data6};
+    std::vector<float> data6_copy{data6};
 
     bitonic_sort::BitonicSort(data6);
     std::sort(data6_copy.begin(), data6_copy.end());
