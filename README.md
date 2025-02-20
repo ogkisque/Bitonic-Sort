@@ -8,7 +8,7 @@ This project is the implementation of the wrapper over opencl C API, and the imp
 
 Cloning repository:
 ```
-git clone --recursive https://github.com/ogkisque/OpenCL.git
+git clone --recursive https://github.com/ogkisque/Bitonic-Sort.git
 git submodule update --init --recursive
 cd libhayai
 git fetch
