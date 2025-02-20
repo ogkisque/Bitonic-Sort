@@ -38,7 +38,7 @@ int main() {
     
     bitonic_sort::BitonicSort(data);
 
-    for (auto it : data)
+    for (auto &&it : data)
         std::cout << it << std::endl;
 
     return 0;

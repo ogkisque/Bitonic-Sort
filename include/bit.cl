@@ -1,8 +1,8 @@
 __kernel void bitonic_sort(__global float *data, const int n) {
     int index = get_global_id(0);
 
-    for (int k = 2; k <= n; k *= 2) {
-        for (int j = k / 2; j > 0; j /= 2) {
+    for (int k = 2; k <= n; k <<= 1) {
+        for (int j = k >> 1; j > 0; j >>= 1) {
             int ixj = index ^ j;
 
             if (ixj > index) {
