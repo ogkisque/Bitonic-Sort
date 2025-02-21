@@ -9,6 +9,7 @@ namespace bitonic_sort {
 namespace details {
     template <typename IterT>
     void BitonicSortBase(IterT start_it, IterT end_it, int size) {
+        using T = typename std::iterator_traits<IterT>::value_type;
         std::vector<cl::Platform> platforms;
         cl::Platform::GetPlatforms(platforms);
         cl::Platform platform = platforms.front();
@@ -20,20 +21,34 @@ namespace details {
         cl::Context context(device);
 
         cl::CommandQueue queue(context);
-        std::string prog_name = "include/bit.cl";
+        std::string prog_name = "include/bitonic.cl";
         cl::Program program(context, prog_name);
 
         std::string func_name = "bitonic_sort";
-        cl::Kernel kernel(program, queue, func_name);
+        cl::Kernel kernelSort(program, queue, func_name);
+        func_name = "bitonic_merge";
+        cl::Kernel kernelMerge(program, queue, func_name);
 
         cl::Buffer buf(queue, start_it, end_it, CL_MEM_READ_WRITE);
-
-        kernel.SetArg(0, buf);
-        kernel.SetArg(1, size);
-
         size_t global_work_size = size;
-        kernel.Run(global_work_size);
+        size_t local_work_size = size > 256 ? 256 : size;
+
+        kernelSort.SetArg(0, buf);
+        kernelSort.SetArg(1, local_work_size * sizeof(T));
+
+        kernelSort.Run(global_work_size, local_work_size);
         queue.Finish();
+
+        for (unsigned int k = local_work_size << 1; k <= global_work_size; k <<= 1) {
+            for (unsigned int j = k >> 1; j > 0; j >>= 1) {
+                kernelMerge.SetArg(0, buf);
+                kernelMerge.SetArg(1, k);
+                kernelMerge.SetArg(2, j);
+                kernelMerge.Run(global_work_size, local_work_size);
+    
+                queue.Finish();
+            }
+        }
 
         buf.Read(start_it);
     }

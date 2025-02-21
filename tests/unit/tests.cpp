@@ -228,6 +228,9 @@ TEST(BitonicSortTest, Test2) {
     const int size4 = 128;
     const int size5 = 256;
     const int size6 = 512;
+    const int size7 = 262144;
+    const int size8 = 1048576;
+    const int size9 = 900000;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -316,6 +319,48 @@ TEST(BitonicSortTest, Test2) {
     std::sort(data6_copy.begin(), data6_copy.end());
 
     ASSERT_EQ(data6, data6_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data7;
+    data7.reserve(size7);
+
+    for (int i = 0; i < size7; i++)
+        data7.push_back(distr(gen));
+
+    std::vector<float> data7_copy{data7};
+
+    bitonic_sort::BitonicSort(data7);
+    std::sort(data7_copy.begin(), data7_copy.end());
+
+    ASSERT_EQ(data7, data7_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data8;
+    data8.reserve(size8);
+
+    for (int i = 0; i < size8; i++)
+        data8.push_back(distr(gen));
+
+    std::vector<float> data8_copy{data8};
+
+    bitonic_sort::BitonicSort(data8);
+    std::sort(data8_copy.begin(), data8_copy.end());
+
+    ASSERT_EQ(data8, data8_copy);
+
+    /////////////////////////////////////////////////////////////////////
+    std::vector<float> data9;
+    data9.reserve(size9);
+
+    for (int i = 0; i < size9; i++)
+        data9.push_back(distr(gen));
+
+    std::vector<float> data9_copy{data9};
+
+    bitonic_sort::BitonicSort(data9);
+    std::sort(data9_copy.begin(), data9_copy.end());
+
+    ASSERT_EQ(data9, data9_copy);
 }
 
 TEST(BitonicSortTest, Test3) {

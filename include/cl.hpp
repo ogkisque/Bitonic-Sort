@@ -504,9 +504,9 @@ namespace cl {
             }
         }
 
-        void Run(size_t global_work_size) {
+        void Run(size_t global_work_size, size_t local_work_size) {
             cl_int err = 0;
-            err |= clEnqueueNDRangeKernel(queue_.Get(), obj_, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
+            err |= clEnqueueNDRangeKernel(queue_.Get(), obj_, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL);
             PARSE_ERR("invoke kernel", err)
             err |= clFinish(queue_.Get());
             PARSE_ERR("finish kernel", err)
