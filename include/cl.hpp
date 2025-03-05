@@ -86,7 +86,7 @@ namespace cl {
         static void GetPlatforms(std::vector<Platform> &platforms) {
             cl_uint num_platforms;
             cl_int err = clGetPlatformIDs(0, NULL, &num_platforms);
-            // PARSE_ERR("finding platforms", err);
+            PARSE_ERR("finding platforms", err);
 
             if (num_platforms == 0) {
                 throw std::runtime_error("platforms were not found");
@@ -236,7 +236,6 @@ namespace cl {
             size_t size = program_text.size();
 
             obj_ = clCreateProgramWithSource(context_.Get(), 1, &text, &size, &err);
-            // err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
             err |= clBuildProgram(obj_, 1, &context_.GetDevice()(), NULL, NULL, NULL);
 
             PARSE_ERR("compiling program", err);
@@ -247,7 +246,6 @@ namespace cl {
             obj_ = clCreateProgramWithSource(context_.Get(), 1, program_text, NULL, &err);
             PARSE_ERR("compiling program", err);
             
-            // err |= clBuildProgram(obj_, 0, NULL, NULL, NULL, NULL);
             err |= clBuildProgram(obj_, 1, &context_.GetDevice()(), NULL, NULL, NULL);
             PARSE_ERR("compiling program", err);
         }

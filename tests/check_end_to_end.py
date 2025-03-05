@@ -9,11 +9,11 @@ for i in range(1, num_test + 1):
     str_ans = "tests/end_to_end/" + str(i) + ".ans"
 
     ans = []
-    for i in open(str_ans):
-        ans.append(int(i.strip()))
+    for j in open(str_ans):
+        ans.append(int(j.strip()))
 	
     result = run(["build/src/main"], capture_output = True, encoding='cp866', stdin=file_in)
-    print("Test: " + str(num_test).strip())
+    print("Test: ", i)
 
     res = list(map(int, result.stdout.split()))
 
@@ -23,7 +23,6 @@ for i in range(1, num_test + 1):
     else:
         print("ERROR\nExpect:", ans, "\nGive:  ", res)
     print("-------------------------------------------------")
-    num_test += 1
 
 if is_ok:
 	print("TESTS PASSED")
