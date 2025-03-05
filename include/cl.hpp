@@ -103,25 +103,7 @@ namespace cl {
             }
         }
 
-        void GetDevices(cl_device_type device_type, std::vector<Device> &devices) const {
-            cl_uint num_devices;
-
-            cl_int err = clGetDeviceIDs(obj_, device_type, 0, nullptr, &num_devices);
-            
-            if (num_devices == 0) {
-                throw std::runtime_error("devices were not found in this platform");
-            }
-
-            std::vector<cl_device_id> device_ids(num_devices);
-            err = clGetDeviceIDs(obj_, device_type, num_devices, device_ids.data(), nullptr);
-            PARSE_ERR("getting device IDs", err);
-
-            devices.clear();
-            devices.reserve(num_devices);
-            for (auto id : device_ids) {
-                devices.emplace_back(id, *this);
-            }
-        }
+        void GetDevices(cl_device_type device_type, std::vector<Device> &devices) const;
 
         template <cl_platform_info param_name>
         typename details::param_traits<cl_platform_info, param_name>::type 
@@ -177,6 +159,26 @@ namespace cl {
     private:
         Platform platform_;
     }; // class Device
+
+    void Platform::GetDevices(cl_device_type device_type, std::vector<Device> &devices) const {
+        cl_uint num_devices;
+
+        cl_int err = clGetDeviceIDs(obj_, device_type, 0, nullptr, &num_devices);
+        
+        if (num_devices == 0) {
+            throw std::runtime_error("devices were not found in this platform");
+        }
+
+        std::vector<cl_device_id> device_ids(num_devices);
+        err = clGetDeviceIDs(obj_, device_type, num_devices, device_ids.data(), nullptr);
+        PARSE_ERR("getting device IDs", err);
+
+        devices.clear();
+        devices.reserve(num_devices);
+        for (auto id : device_ids) {
+            devices.emplace_back(id, *this);
+        }
+    }
     
     class Context final : public details::Wrapper<cl_context> {
     public:
