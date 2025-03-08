@@ -31,7 +31,7 @@ namespace {
     }
 } // namespace
 
-int main() {
+int main() try {
     std::vector<float> data{};
     if (!GetInput(data))
         return 1;
@@ -42,4 +42,6 @@ int main() {
         std::cout << it << std::endl;
 
     return 0;
+} catch (std::exception &ex) {
+    std::cout << "Exceptions is catched: " << ex.what() << std::endl;
 }
