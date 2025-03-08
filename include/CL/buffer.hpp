@@ -41,7 +41,7 @@ namespace cl {
                 queue_(queue) {
             using T = typename std::iterator_traits<IterT>::value_type;
             static_assert(!std::is_same_v<bool, T>, "Incorrect value type of iterator");
-            std::vector<T> data{start, end};
+            std::vector<T> data(start, end);
             size_ = data.size() * sizeof(T);
             obj_ = clRUN(clCreateBuffer, queue_.GetContext().Get(), flag, size_, nullptr);
             clRUN(clEnqueueWriteBuffer, queue_.Get(), obj_, CL_TRUE, 0, size_, data.data(), 0, nullptr, nullptr);
@@ -56,7 +56,7 @@ namespace cl {
             using T = typename std::iterator_traits<IterT>::value_type;
             static_assert(!std::is_same_v<bool, T>, "Incorrect value type of iterator");
             size_t num_elems = size_ / sizeof(T);
-            std::vector<T> data{num_elems};
+            std::vector<T> data(num_elems);
             clRUN(clEnqueueReadBuffer, queue_.Get(), obj_, CL_TRUE, 0, size_, data.data(), 0, nullptr, nullptr);
 
             IterT it = start_it;
@@ -69,7 +69,7 @@ namespace cl {
             using T = typename std::iterator_traits<IterT>::value_type;
             static_assert(!std::is_same_v<bool, T>, "Incorrect value type of iterator");
 
-            std::vector<T> data{start, end};
+            std::vector<T> data(start, end);
             if (data.size() * sizeof(T) != size_) {
                 throw std::runtime_error("Data size does not match with buffer");
             }
