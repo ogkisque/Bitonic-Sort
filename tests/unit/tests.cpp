@@ -1,4 +1,3 @@
-#include "cl.hpp"
 #include "bitonic.hpp"
 #include <gtest/gtest.h>
 #include <ctime>
