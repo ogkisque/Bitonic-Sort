@@ -1,5 +1,12 @@
 #pragma once
-#include "cl.hpp"
+#include "CL/cl.hpp"
+#include "CL/platform.hpp"
+#include "CL/device.hpp"
+#include "CL/context.hpp"
+#include "CL/program.hpp"
+#include "CL/queue.hpp"
+#include "CL/buffer.hpp"
+#include "CL/kernel.hpp"
 #include <vector>
 #include <limits>
 #include <cmath>
@@ -21,8 +28,11 @@ namespace details {
         cl::Context context(device);
 
         cl::CommandQueue queue(context);
-        std::string prog_name = "include/bitonic.cl";
-        cl::Program program(context, prog_name);
+
+        std::vector<std::string> kernel;
+        file::FindFile("kernels", ".cl", kernel);
+
+        cl::Program program(context, kernel.front());
 
         std::string func_name = "bitonic_sort";
         cl::Kernel kernelSort(program, queue, func_name);
