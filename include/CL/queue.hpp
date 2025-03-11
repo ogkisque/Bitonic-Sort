@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CL/cl.hpp"
+#include "CL/support_structs.hpp"
 #include "CL/context.hpp"
 
 namespace cl {
@@ -8,7 +10,7 @@ namespace cl {
         CommandQueue() : details::Wrapper<cl_command_queue>(NULL), context_() {}
 
         CommandQueue(const Context &context) : context_(context) {
-            obj_ = clRUN(clCreateCommandQueue, context_.Get(), context_.GetDevice().Get(), 0);
+            obj_ = clRUN(clCreateCommandQueueWithProperties, context_.Get(), context_.GetDevice().Get(), nullptr);
         }
         
         CommandQueue(const CommandQueue &other) : details::Wrapper<cl_command_queue>(other), context_(other.context_) {}
@@ -20,9 +22,7 @@ namespace cl {
             return *this;
         }
 
-        CommandQueue(CommandQueue &&other) noexcept : details::Wrapper<cl_command_queue>(std::move(other)) {
-            std::swap(context_, other.context_);
-        }
+        CommandQueue(CommandQueue &&other) noexcept : details::Wrapper<cl_command_queue>(std::move(other)), context_(std::move(other.context_)) {}
 
         CommandQueue &operator=(CommandQueue &&other) noexcept {
             if (this != &other) {
@@ -34,7 +34,7 @@ namespace cl {
         }
 
         void PutBarrier() {
-            clRUN(clEnqueueBarrier, obj_);
+            clRUN(clEnqueueBarrierWithWaitList, obj_, 0, nullptr, nullptr);
         }
 
         void Finish() {
