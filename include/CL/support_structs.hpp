@@ -7,13 +7,9 @@
 #include <iostream>
 #include <vector>
 
-namespace cl {
+#include "CL/cl.hpp"
 
-    #define PARSE_ERR(msg_text, err)  \
-    if (err != CL_SUCCESS) {  \
-        std::string msg = "Error with " + std::string(msg_text) + ". Code: " + std::to_string(err); \
-        throw std::runtime_error(msg); \
-    } \
+namespace cl {
 
     namespace details {
         template <typename T, cl_int Name> struct param_traits {};
@@ -223,17 +219,6 @@ namespace cl {
             }
         };
 
-        // template<> struct param_traits<cl_program_info, CL_PROGRAM_BINARIES> {
-        //     enum { value = CL_PROGRAM_BINARIES };
-        //     using type = unsigned char**;
-
-        //     static type CastToType(std::string &str) {
-        //         char* temp = new char[str.size() + 1U];
-        //         std::strcpy(temp, str.c_str());
-        //         return reinterpret_cast<type>(temp);
-        //     }
-        // };
-
         template<> struct param_traits<cl_program_info, CL_PROGRAM_NUM_KERNELS> {
             enum { value = CL_PROGRAM_NUM_KERNELS };
             using type = size_t;
@@ -281,15 +266,6 @@ namespace cl {
             }
         };
 
-        // template<> struct param_traits<cl_command_queue_info, CL_QUEUE_SIZE> {
-        //     enum { value = CL_QUEUE_SIZE };
-        //     using type = unsigned int;
-
-        //     static type CastToType(std::string &str) {
-        //         return static_cast<unsigned int>(std::stoi(str));
-        //     }
-        // };
-    
         /*  Memory Object  */
         template<> struct param_traits<cl_mem_info, CL_MEM_TYPE> {
             enum { value = CL_MEM_TYPE };
@@ -360,7 +336,7 @@ namespace cl {
             using type = std::string;
 
             static type CastToType(std::string &str) {
-                return str;
+                return str.data();
             }
         };
 
@@ -417,56 +393,56 @@ namespace cl {
 
         template <> struct ReferenceHandler<cl_device_id> {
             static cl_int Retain(cl_device_id device) { 
-                return ::clRetainDevice(device);
+                return clRUN(clRetainDevice, device);
             }
 
             static cl_int Release(cl_device_id device) { 
-                return ::clReleaseDevice(device);
+                return clRUN(clReleaseDevice, device);
             }
         };
 
         template <> struct ReferenceHandler<cl_context> {
             static cl_int Retain(cl_context context) { 
-                return ::clRetainContext(context); 
+                return clRUN(clRetainContext, context); 
             }
             static cl_int Release(cl_context context) { 
-                return ::clReleaseContext(context); 
+                return clRUN(clReleaseContext, context); 
             }
         };
         
         template <> struct ReferenceHandler<cl_program> {
             static cl_int Retain(cl_program program) {          
-                return ::clRetainProgram(program); 
+                return clRUN(clRetainProgram, program); 
             }
             static cl_int Release(cl_program program) {
-                return ::clReleaseProgram(program); 
+                return clRUN(clReleaseProgram, program); 
             }
         };
 
         template <> struct ReferenceHandler<cl_command_queue> {
             static cl_int Retain(cl_command_queue command_queue) { 
-                return ::clRetainCommandQueue(command_queue); 
+                return clRUN(clRetainCommandQueue, command_queue); 
             }
             static cl_int Release(cl_command_queue command_queue) { 
-                return ::clReleaseCommandQueue(command_queue);
+                return clRUN(clReleaseCommandQueue, command_queue);
             }
         };
 
         template <> struct ReferenceHandler<cl_mem> {
             static cl_int Retain(cl_mem memory) { 
-                return ::clRetainMemObject(memory); 
+                return clRUN(clRetainMemObject, memory); 
             }
             static cl_int Release(cl_mem memory) { 
-                return ::clReleaseMemObject(memory); 
+                return clRUN(clReleaseMemObject, memory); 
             }
         };
 
         template <> struct ReferenceHandler<cl_kernel> {
             static cl_int Retain(cl_kernel kernal) { 
-                return ::clRetainKernel(kernal); 
+                return clRUN(clRetainKernel, kernal); 
             }
             static cl_int Release(cl_kernel kernal) { 
-                return ::clReleaseKernel(kernal); 
+                return clRUN(clReleaseKernel, kernal); 
             }
         };
 
@@ -477,14 +453,11 @@ namespace cl {
             template <cl_platform_info param_name>
             static typename param_traits<cl_platform_info, param_name>::type
             GetInfo(cl_platform_id platform) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetPlatformInfo(platform, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting platform info", err)
+                clRUN(clGetPlatformInfo, platform, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetPlatformInfo(platform, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting platform info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetPlatformInfo, platform, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_platform_info, param_name>::CastToType(value);
             }
@@ -494,14 +467,11 @@ namespace cl {
             template <cl_device_info param_name>
             static typename details::param_traits<cl_device_info, param_name>::type
             GetInfo(cl_device_id device) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetDeviceInfo(device, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting device info", err)
+                clRUN(clGetDeviceInfo, device, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetDeviceInfo(device, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting device info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetDeviceInfo, device, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_device_info, param_name>::CastToType(value);
             }
@@ -511,14 +481,11 @@ namespace cl {
             template <cl_context_info param_name>
             static typename details::param_traits<cl_context_info, param_name>::type
             GetInfo(cl_context context) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetContextInfo(context, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting context info", err)
+                clRUN(clGetContextInfo, context, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetContextInfo(context, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting context info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetContextInfo, context, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_context_info, param_name>::CastToType(value);
             }
@@ -528,14 +495,11 @@ namespace cl {
             template <cl_program_info param_name>
             static typename details::param_traits<cl_program_info, param_name>::type
             GetInfo(cl_program program) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetProgramInfo(program, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting program info", err)
+                clRUN(clGetProgramInfo, program, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetProgramInfo(program, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting program info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetProgramInfo, program, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_program_info, param_name>::CastToType(value);
             }
@@ -545,14 +509,11 @@ namespace cl {
             template <cl_command_queue_info param_name>
             static typename details::param_traits<cl_command_queue_info, param_name>::type
             GetInfo(cl_command_queue command_queue) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetCommandQueueInfo(command_queue, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting command_queue info", err)
+                clRUN(clGetCommandQueueInfo, command_queue, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetCommandQueueInfo(command_queue, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting command_queue info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetCommandQueueInfo, command_queue, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_command_queue_info, param_name>::CastToType(value);
             }
@@ -562,14 +523,11 @@ namespace cl {
             template <cl_mem_info param_name>
             static typename details::param_traits<cl_mem_info, param_name>::type
             GetInfo(cl_mem memory) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetMemObjectInfo(memory, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting memory info", err)
+                clRUN(clGetMemObjectInfo, memory, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetMemObjectInfo(memory, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting memory info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetMemObjectInfo, memory, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_mem_info, param_name>::CastToType(value);
             }
@@ -579,17 +537,74 @@ namespace cl {
             template <cl_kernel_info param_name>
             static typename details::param_traits<cl_kernel_info, param_name>::type
             GetInfo(cl_kernel kernel) {
-                cl_int err = 0;
                 size_t info_size = 0;
-                err = clGetKernelInfo(kernel, param_name, 0, NULL, &info_size);
-                PARSE_ERR("getting kernel info", err)
+                clRUN(clGetKernelInfo, kernel, param_name, 0, nullptr, &info_size);
 
-                std::string value(info_size, '\0');
-                err = clGetKernelInfo(kernel, param_name, info_size, value.data(), NULL);
-                PARSE_ERR("getting kernel info", err)
+                std::string value(info_size, 0);
+                clRUN(clGetKernelInfo, kernel, param_name, info_size, value.data(), nullptr);
                 
                 return param_traits<cl_kernel_info, param_name>::CastToType(value);
             }
         };
+    } // namespace details
+
+    namespace details {
+        /*  Wrapper  */
+        template <typename cl_type> class Wrapper {
+        public:
+            Wrapper(cl_type obj = NULL) : obj_(obj) {}
+            
+            Wrapper(const Wrapper &other) : obj_(other.obj_) {
+                Retain();
+            }
+
+            Wrapper &operator=(const Wrapper &other) {
+                if (this != &other) {
+                    Release();
+                    obj_ = other.obj_;
+                    Retain();
+                }
+                
+                return *this;
+            }
+
+            Wrapper(Wrapper &&other) noexcept : obj_(other.obj_) {
+                other.obj_ = NULL;
+            }
+
+            Wrapper &operator=(Wrapper &&other) noexcept {
+                if (this != &other) {
+                    Release();
+                    obj_ = other.obj_;
+                    other.obj_ = NULL;
+                }
+                
+                return *this;
+            }
+            
+            ~Wrapper() { if (obj_) Release(); }
+            
+            const cl_type& operator()() const { 
+                return obj_;
+            }
+
+            cl_type& operator()() {
+                return obj_;
+            }
+            
+            cl_type Get() const {
+                return obj_;
+            }
+
+            cl_int Retain() const {
+                return ReferenceHandler<cl_type>::Retain(obj_);
+            }
+
+            cl_int Release() const {
+                return ReferenceHandler<cl_type>::Release(obj_);
+            }
+        protected:
+            cl_type obj_;
+        }; // class Wrapper
     } // namespace details
 } // namespace cl
