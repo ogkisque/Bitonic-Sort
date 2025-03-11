@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CL/cl.hpp"
+#include "CL/support_structs.hpp"
 #include "queue.hpp"
 
 namespace cl {
@@ -7,8 +9,8 @@ namespace cl {
     public:
         Buffer() : details::Wrapper<cl_mem>(NULL), queue_() {}
 
-        Buffer(const CommandQueue &queue, cl_mem_flags flag, size_t size) : size_(size), queue_(queue) {
-            obj_ = clRUN(clCreateBuffer, queue_.GetContext().Get(), flag, size, nullptr);
+        Buffer(const CommandQueue &queue, cl_mem_flags flag, size_t size, void *host_ptr = nullptr) : size_(size), queue_(queue) {
+            obj_ = clRUN(clCreateBuffer, queue_.GetContext().Get(), flag, size, host_ptr);
         }
 
         Buffer(const Buffer &other) : details::Wrapper<cl_mem>(other), size_(other.size_), queue_(other.queue_) {}
@@ -21,10 +23,7 @@ namespace cl {
             return *this;
         }
 
-        Buffer(Buffer &&other) noexcept : details::Wrapper<cl_mem>(std::move(other)) {
-            std::swap(size_, other.size_);
-            std::swap(queue_, other.queue_);
-        }
+        Buffer(Buffer &&other) noexcept : details::Wrapper<cl_mem>(std::move(other)), size_(other.size_), queue_(std::move(other.queue_)) {}
 
         Buffer &operator=(Buffer &&other) noexcept {
             if (this != &other) {
@@ -70,11 +69,10 @@ namespace cl {
             static_assert(!std::is_same_v<bool, T>, "Incorrect value type of iterator");
 
             std::vector<T> data(start, end);
-            if (data.size() * sizeof(T) != size_) {
+            if (data.size() * sizeof(T) != size_)
                 throw std::runtime_error("Data size does not match with buffer");
-            }
 
-            clRUN(clEnqueueWriteBuffer, queue_.Get(), obj_, CL_TRUE, 0, size_, data, 0, nullptr, nullptr);
+            clRUN(clEnqueueWriteBuffer, queue_.Get(), obj_, CL_TRUE, 0, size_, data.data(), 0, nullptr, nullptr);
         }
 
         template <cl_mem_info param_name>

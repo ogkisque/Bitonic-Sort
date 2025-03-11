@@ -1,5 +1,6 @@
 #pragma once
 
+#define CL_TARGET_OPENCL_VERSION 200
 #include <CL/cl.h>
 #include <stdexcept>
 #include <functional>
@@ -8,8 +9,6 @@
 #include <iostream>
 #include <vector>
 #include <format>
-
-#include "CL/support_structs.hpp"
 
 namespace cl {
 
@@ -51,66 +50,5 @@ namespace cl {
         auto error = std::invoke(func, std::forward<Args>(args)...);
         clCheckError(error, line, file_name, func_name);
         return error;
-    }
-
-    namespace details {
-
-        /*  Wrapper  */
-        template <typename cl_type> class Wrapper {
-        public:
-            Wrapper(cl_type obj = NULL) : obj_(obj) { Retain(); }
-            
-            Wrapper(const Wrapper &other) : obj_(other.obj_) {
-                Retain();
-            }
-
-            Wrapper &operator=(const Wrapper &other) {
-                if (this != &other) {
-                    Release();
-                    obj_ = other.obj_;
-                    Retain();
-                }
-                
-                return *this;
-            }
-
-            Wrapper(Wrapper &&other) noexcept : obj_(other.obj_) {
-                other.obj_ = NULL;
-            }
-
-            Wrapper &operator=(Wrapper &&other) noexcept {
-                if (this != &other) {
-                    Release();
-                    obj_ = other.obj_;
-                    other.obj_ = NULL;
-                }
-                
-                return *this;
-            }
-            
-            ~Wrapper() { if (obj_) Release(); }
-            
-            const cl_type& operator()() const { 
-                return obj_;
-            }
-
-            cl_type& operator()() {
-                return obj_;
-            }
-            
-            cl_type Get() const {
-                return obj_;
-            }
-
-            cl_int Retain() const {
-                return ReferenceHandler<cl_type>::Retain(obj_);
-            }
-
-            cl_int Release() const {
-                return ReferenceHandler<cl_type>::Release(obj_);
-            }
-        protected:
-            cl_type obj_;
-        }; // class Wrapper
-    } // namespace details    
+    } 
 }; // namespace cl

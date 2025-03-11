@@ -1,7 +1,3 @@
-#ifndef CL_TARGET_OPENCL_VERSION
-#define CL_TARGET_OPENCL_VERSION 120
-#endif
-
 #include "bitonic.hpp"
 
 #include <iostream>

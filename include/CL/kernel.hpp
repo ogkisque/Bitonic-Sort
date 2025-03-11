@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CL/cl.hpp"
+#include "CL/support_structs.hpp"
 #include "CL/program.hpp"
 #include "CL/queue.hpp"
 #include "CL/buffer.hpp"
@@ -24,10 +26,7 @@ class Kernel final : public details::Wrapper<cl_kernel> {
             return *this;
         }
 
-        Kernel(Kernel &&other) noexcept : details::Wrapper<cl_kernel>(std::move(other)) {
-            std::swap(program_, other.program_);
-            std::swap(queue_, other.queue_);
-        }
+        Kernel(Kernel &&other) noexcept : details::Wrapper<cl_kernel>(std::move(other)), program_(std::move(other.program_)), queue_(std::move(other.queue_)) {}
 
         Kernel &operator=(Kernel &&other) noexcept {
             if (this != &other) {
@@ -45,15 +44,19 @@ class Kernel final : public details::Wrapper<cl_kernel> {
         }
 
         void SetArg(cl_uint arg_num, const Buffer &buf) {
-            cl_mem mem = buf.Get(); buf.Retain();
+            cl_mem mem = buf.Get();
             clRUN(clSetKernelArg, obj_, arg_num, sizeof(cl_mem), &mem);
         }
 
         template <typename IterT>
         void SetArgs(IterT start_it, IterT end_it, cl_uint first_arg_num) {
-            for (IterT it = start_it; it != end_it; it++, first_arg_num++) {
+            for (IterT it = start_it; it != end_it; it++, first_arg_num++)
                 clRUN(clSetKernelArg, obj_, first_arg_num, sizeof(void*), it);
-            }
+        }
+
+        void Run(size_t global_work_size) {
+            clRUN(clEnqueueNDRangeKernel, queue_.Get(), obj_, 1, nullptr, &global_work_size, nullptr, 0, nullptr, nullptr);
+            queue_.Finish();
         }
 
         void Run(size_t global_work_size, size_t local_work_size) {
