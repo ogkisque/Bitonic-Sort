@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CL/cl.hpp"
+#include "CL/support_structs.hpp"
 #include "CL/platform.hpp"
 
 namespace cl {
@@ -25,9 +27,7 @@ namespace cl {
             return *this;
         }
 
-        Device(Device &&other) noexcept : details::Wrapper<cl_device_id>(std::move(other)) {
-            std::swap(platform_, other.platform_);
-        }
+        Device(Device &&other) noexcept : details::Wrapper<cl_device_id>(std::move(other)), platform_(std::move(other.platform_)) {}
 
         Device &operator=(Device &&other) noexcept {
             if (this != &other) {

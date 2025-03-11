@@ -1,6 +1,8 @@
 #pragma once
+
 #include "CL/cl.hpp"
 #include "CL/context.hpp"
+#include "CL/support_structs.hpp"
 #include "utility.hpp"
 
 namespace cl {
@@ -31,9 +33,7 @@ namespace cl {
             return *this;
         }
 
-        Program(Program &&other) noexcept : details::Wrapper<cl_program>(std::move(other)) {
-            std::swap(context_, other.context_);
-        }
+        Program(Program &&other) noexcept : details::Wrapper<cl_program>(std::move(other)), context_(std::move(other.context_)) {}
 
         Program &operator=(Program &&other) noexcept {
             if (this != &other) {

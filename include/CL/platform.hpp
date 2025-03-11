@@ -1,5 +1,7 @@
 #pragma once
+
 #include "CL/cl.hpp"
+#include "CL/support_structs.hpp"
 
 namespace cl {
     class Device;
