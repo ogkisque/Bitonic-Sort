@@ -26,7 +26,6 @@ namespace details {
         cl::Device device = devices.front();
 
         cl::Context context(device);
-
         cl::CommandQueue queue(context);
 
         std::vector<std::string> kernel;
@@ -41,7 +40,7 @@ namespace details {
 
         cl::Buffer buf(queue, start_it, end_it, CL_MEM_READ_WRITE);
         size_t global_work_size = size;
-        size_t local_work_size = size > 256 ? 256 : size;
+        size_t local_work_size = std::min(size, 256);
 
         kernelSort.SetArg(0, buf);
         kernelSort.SetArg(1, local_work_size * sizeof(T));

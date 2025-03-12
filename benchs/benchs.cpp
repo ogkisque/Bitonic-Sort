@@ -32,8 +32,8 @@ BENCHMARK(Sort2, Standart, 1, 1) {
 }
 
 int main() {
-    const int size1 = 100000;
-    const int size2 = 131072;
+    const size_t size1 = 15'000'000;
+    const size_t size2 = 16'777'216;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distr(1, 200000);
