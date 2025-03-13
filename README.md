@@ -69,3 +69,9 @@ Finally, run the program:
 ```
 ./build/benchs/benchs
 ```
+## Requirements
+
+This project is supported by features from 20 C++ standards, for their work it is necessary to use compiler versions starting from:
+1. GCC libstdc++ 13.
+2. MSVC (Visual Studio 2022 17).
+3. Clang libc++ 17.
