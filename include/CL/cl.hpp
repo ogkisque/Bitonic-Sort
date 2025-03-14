@@ -8,7 +8,6 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <format>
 
 namespace cl {
 
@@ -28,8 +27,9 @@ namespace cl {
 
     void clCheckError(cl_int error, int line, std::string_view file_name, std::string_view func_name) {
         if (error != CL_SUCCESS) {
-            std::string mes = std::format("OpenCL lib {} error in '{}' file on line '{}', when calling the function '{}'.\n", 
-                error, file_name, line, func_name);
+            std::string mes = "OpenCL lib '"; mes += std::to_string(error); mes += "' error in '";
+            mes += file_name; mes += "' file on line '"; mes += std::to_string(line);
+            mes += "', when calling the function '"; mes += func_name; mes += "'.\n";
 
             throw clException(mes);
         }

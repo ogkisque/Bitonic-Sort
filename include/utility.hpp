@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <vector>
 #include <string>
-#include <format>
 
 namespace file {
     namespace fs = std::filesystem;
@@ -20,15 +19,18 @@ namespace file {
                 }
 
                 if (old_size == files.size()) {
-                    std::string mes = std::format("File with '{}' extension was not found in the '{}' folder.\n", 
-                        extension, dir);
+                    std::string mes = "File with '"; mes += extension;
+                    mes += "' extension was not found in the '"; mes += dir;
+                    mes += "' folder.\n";
+
                     throw std::runtime_error(mes);
                 }
             }
         }
 
         if (old_size == files.size()) {
-            std::string mes = std::format("'{}' folder was not found.\n", dir);
+            std::string mes = "'"; mes += dir;
+            mes += "' folder was not found.\n";
             throw std::runtime_error(mes);
         }
     }
