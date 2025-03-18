@@ -15,7 +15,7 @@ namespace bitonic_sort {
 
 namespace details {
     template <typename IterT>
-    void BitonicSortBase(IterT start_it, IterT end_it, int size) {
+    void BitonicSortBase(IterT start_it, IterT end_it, size_t size) {
         using T = typename std::iterator_traits<IterT>::value_type;
         std::vector<cl::Platform> platforms;
         cl::Platform::GetPlatforms(platforms);
@@ -40,7 +40,7 @@ namespace details {
 
         cl::Buffer buf(queue, start_it, end_it, CL_MEM_READ_WRITE);
         size_t global_work_size = size;
-        size_t local_work_size = std::min(size, 256);
+        size_t local_work_size = std::min(size, size_t(256));
 
         kernelSort.SetArg(0, buf);
         kernelSort.SetArg(1, local_work_size * sizeof(T));
@@ -63,8 +63,8 @@ namespace details {
     }
 
     template <typename T>
-    int ComplementVector(std::vector<T> &data, int size) {
-        int size_pow2 = std::pow(2, static_cast<int>(std::log2(size)) + 1);
+    size_t ComplementVector(std::vector<T> &data, size_t size) {
+        size_t size_pow2 = 1 << (static_cast<int>(std::log2(size)) + 1);
         T max_elem = std::numeric_limits<T>::max();
         for (int i = size; i < size_pow2; i++)
             data.push_back(max_elem);
@@ -76,18 +76,18 @@ namespace details {
 
 template <typename T>
 void BitonicSort(std::vector<T> &data) {
-    int size = data.size();
-    int new_size = size;
+    auto size = data.size();
+    auto new_size = size;
 
-    if (size == 0 || size == 1)
+    if (size == 0U || size == 1U)
         return;
 
-    if (!((size & (size - 1)) == 0)) // not power of 2
+    if (!((size & (size - 1U)) == 0U)) // not power of 2
         new_size = details::ComplementVector(data, size);
 
     details::BitonicSortBase(data.begin(), data.end(), new_size);
 
-    if (!((size & (size - 1)) == 0)) { // not power of 2
+    if (!((size & (size - 1U)) == 0U)) { // not power of 2
         for (int i = size; i < new_size; i++)
             data.pop_back();
     }

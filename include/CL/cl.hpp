@@ -20,10 +20,10 @@ namespace cl {
         }
     private:
         std::string message_;
-    }; // class clException       
+    }; // class clException
 
     #define clRUN(func, ...) \
-            clRun(__LINE__, __FILE__, #func, func __VA_OPT__(,) __VA_ARGS__)
+            clRun(__LINE__, __FILE__, #func, func, ##__VA_ARGS__)
 
     void clCheckError(cl_int error, int line, std::string_view file_name, std::string_view func_name) {
         if (error != CL_SUCCESS) {

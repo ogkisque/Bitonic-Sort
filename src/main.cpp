@@ -14,7 +14,7 @@ namespace {
 
         data.reserve(size);
         for (size_t i = 0; i < size; ++i) {
-            double x = 0;
+            float x = 0;
             std::cin >> x;
             data.push_back(x);
             if (!std::cin.good()) {
