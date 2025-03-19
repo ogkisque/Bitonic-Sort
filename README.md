@@ -6,14 +6,6 @@ This project is the implementation of the wrapper over opencl C API, and the imp
 
 ## Build and Run
 
-Cloning repository:
-```
-git clone --recursive https://github.com/ogkisque/Bitonic-Sort.git
-git submodule update --init --recursive
-cd libhayai
-git fetch
-```
-
 If you want to build the project, write this in the project directory:
 ```
 cmake -S . -B build
@@ -27,28 +19,16 @@ After that, you can run main target program:
 ```
 
 ## Tests
-### Unit
+### Unit & End to end
 
-If you want to run unit tests, generate Makefiles with the WITH_TESTS flag:
+If you want to run unit and e2e tests, generate Makefiles with the WITH_TESTS flag:
 ```
 cmake [...] -DWITH_TESTS=1
 ```
 
-Then build `tests` target:
-```
-cmake --build build --target tests
-```
-
 After that, run:
 ```
-./build/tests/tests
-```
-
-### End to end
-
-If you want to run end-to-end tests, type it:
-```
-python3 tests/check_end_to_end.py
+ctest --test-dir build
 ```
 
 ### Benchmarks
