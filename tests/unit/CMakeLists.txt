@@ -1,7 +1,5 @@
 add_executable(tests tests.cpp)
 
-target_compile_features(tests PUBLIC cxx_std_20)
-
 target_link_libraries(tests GTest::gtest_main)
 target_link_libraries(tests cl_lib)
 
@@ -10,5 +8,5 @@ target_include_directories(tests PRIVATE ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_D
 set(RUN_TESTS ./tests --gtest_color=yes)
 add_test(
     NAME unit_test
-    COMMAND ${RUN_TESTS}
-)
+    COMMAND $<TARGET_FILE:tests>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..)
