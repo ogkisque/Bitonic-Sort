@@ -1,18 +1,20 @@
+import sys
 from subprocess import run, Popen, PIPE
 from sys import executable
 
+generator = sys.argv[1]
 num_test = 5
 is_ok = True
 for i in range(1, num_test + 1):
-    str_data =  "tests/end_to_end/" + str(i) + ".dat"
+    str_data =  "tests/end-to-end/tests/" + str(i) + ".dat"
     file_in = open(str_data, "r")
-    str_ans = "tests/end_to_end/" + str(i) + ".ans"
+    str_ans = "tests/end-to-end/tests/" + str(i) + ".ans"
 
     ans = []
     for j in open(str_ans):
         ans.append(int(j.strip()))
 	
-    result = run(["build/src/main"], capture_output = True, encoding='cp866', stdin=file_in)
+    result = run([generator], capture_output = True, encoding='cp866', stdin=file_in)
     print("Test: ", i)
 
     res = list(map(int, result.stdout.split()))
