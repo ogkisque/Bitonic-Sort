@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Install google-test, also install g++
-      run: sudo apt-get install libgtest-dev googletest google-mock libboost-dev g++
+      run: sudo apt-get install libgtest-dev googletest google-mock libboost-dev libbenchmark-dev g++
     
     - name: Install OpenCL headers and loader
       run: sudo apt update; sudo apt install ocl-icd-libopencl1 ocl-icd-opencl-dev opencl-headers
