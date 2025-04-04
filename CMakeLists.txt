@@ -15,7 +15,9 @@ if (WITH_TESTS)
 endif()
 
 if (WITH_BENCHMARKS)
-    find_package(benchmark REQUIRED)
-    message("Build binary file for benchmarks ...")
     add_subdirectory(benchs)
+
+    set (BENCHMARK_ENABLE_INSTALL OFF)
+    set (BENCHMARK_ENABLE_TESTING OFF)
+    add_subdirectory(benchmark)
 endif()
